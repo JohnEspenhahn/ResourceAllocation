@@ -1,6 +1,6 @@
 package org.espenhahn.allocate.likecompiler;
 
-public class RegisterMain {
+public class UsageExample {
 
 	public static void main(String[] args) {
 		Resource t0 = new ResourceImpl("t0"),
