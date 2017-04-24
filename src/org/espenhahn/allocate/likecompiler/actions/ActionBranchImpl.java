@@ -1,12 +1,15 @@
-package org.espenhahn.allocate.likecompiler;
+package org.espenhahn.allocate.likecompiler.actions;
 
-public class ActionBranch implements Action {
+import org.espenhahn.allocate.likecompiler.Action;
+import org.espenhahn.allocate.likecompiler.Resource;
+
+public class ActionBranchImpl implements Action {
 	
 	private static final Resource[] IN = new Resource[0];
 
 	private int branch_addr;
 	
-	public ActionBranch(int branch_addr) {		
+	public ActionBranchImpl(int branch_addr) {		
 		this.branch_addr = branch_addr;
 	}
 	

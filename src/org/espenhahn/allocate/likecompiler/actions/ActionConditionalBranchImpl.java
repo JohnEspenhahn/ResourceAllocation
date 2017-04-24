@@ -1,6 +1,9 @@
-package org.espenhahn.allocate.likecompiler;
+package org.espenhahn.allocate.likecompiler.actions;
 
-public class ActionConditionalBranch implements Action {
+import org.espenhahn.allocate.likecompiler.Action;
+import org.espenhahn.allocate.likecompiler.Resource;
+
+public class ActionConditionalBranchImpl implements Action {
 
 	
 	private Action op;
@@ -8,7 +11,7 @@ public class ActionConditionalBranch implements Action {
 	
 	private int branch_addr;
 	
-	public ActionConditionalBranch(Action op, Resource r, int branch_addr) {
+	public ActionConditionalBranchImpl(Action op, Resource r, int branch_addr) {
 		this.op = op;
 		this.rs = new Resource[] { r };
 		

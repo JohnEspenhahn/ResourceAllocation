@@ -1,13 +1,16 @@
-package org.espenhahn.allocate.likecompiler;
+package org.espenhahn.allocate.likecompiler.actions;
+
+import org.espenhahn.allocate.likecompiler.Action;
+import org.espenhahn.allocate.likecompiler.Resource;
 
 public class ActionBinaryImpl implements Action {
 
 	private Resource out;
-	private ActionExpression sub;
+	private ActionSubExpressionImpl sub;
 	
-	public ActionBinaryImpl(ActionExpression.Action op, Resource out, Resource p1, Resource p2) {
+	public ActionBinaryImpl(ActionSubExpressionImpl.Action op, Resource out, Resource p1, Resource p2) {
 		this.out = out;
-		this.sub = new ActionExpression(op, p1, p2);
+		this.sub = new ActionSubExpressionImpl(op, p1, p2);
 	}
 	
 	@Override

@@ -19,7 +19,6 @@ public class ActionListNode {
 		this.dataflow_set = new HashSet<Resource>();
 	}
 	
-	// TODO seperate into blocks
 	public static ActionListNode build(Action[] actions) {
 		ActionListNode[] nodes = new ActionListNode[actions.length];
 		

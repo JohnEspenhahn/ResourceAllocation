@@ -1,15 +1,17 @@
-package org.espenhahn.allocate.likecompiler;
+package org.espenhahn.allocate.likecompiler.actions;
+
+import org.espenhahn.allocate.likecompiler.Resource;
 
 /**
  * An expression that doesn't specify the out destination
  * @author John
  *
  */
-public class ActionExpression {
+public class ActionSubExpressionImpl {
 	private Action op;
 	private Resource[] ins;
 	
-	public ActionExpression(Action op, Resource p1, Resource p2) {
+	public ActionSubExpressionImpl(Action op, Resource p1, Resource p2) {
 		this.op = op;
 		this.ins = new Resource[] { p1, p2 };
 	}
@@ -54,8 +56,8 @@ public class ActionExpression {
 	
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof ActionExpression) {
-			ActionExpression e = (ActionExpression) o;
+		if (o instanceof ActionSubExpressionImpl) {
+			ActionSubExpressionImpl e = (ActionSubExpressionImpl) o;
 			return e.op == op && e.ins[0].equals(ins[0]) && e.ins[1].equals(ins[1]);
 		} else {
 			return false;

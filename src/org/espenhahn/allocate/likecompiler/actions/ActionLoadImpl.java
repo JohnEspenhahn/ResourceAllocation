@@ -1,17 +1,18 @@
-package org.espenhahn.allocate.likecompiler;
+package org.espenhahn.allocate.likecompiler.actions;
 
-public class ActionLoadLitImpl implements Action {
-	
-	private static final Resource[] IN = new Resource[0];
-	
+import org.espenhahn.allocate.likecompiler.Action;
+import org.espenhahn.allocate.likecompiler.Resource;
+
+public class ActionLoadImpl implements Action {
+
 	private Resource out;
-	private int lit;
+	private Resource[] in;
 	
-	public ActionLoadLitImpl(Resource out, int lit) {
+	public ActionLoadImpl(Resource out, Resource in) {
 		this.out = out;
-		this.lit = lit;
+		this.in = new Resource[] { in };
 	}
-
+	
 	@Override
 	public Resource out() {
 		return out;
@@ -19,13 +20,13 @@ public class ActionLoadLitImpl implements Action {
 
 	@Override
 	public boolean evaluate() {
-		out.set(lit);
+		out.set(in[0].get());
 		return false;
 	}
 
 	@Override
 	public Resource[] in() {
-		return IN;
+		return in;
 	}
 
 	@Override
