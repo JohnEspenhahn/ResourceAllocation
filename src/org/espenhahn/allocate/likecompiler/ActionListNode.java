@@ -45,6 +45,28 @@ public class ActionListNode {
 		return root;
 	}
 	
+	/**
+	 * Convert the given actions to an ActionList, then analyzeDataflow for the entire list
+	 * @param actions
+	 * @return The first useful node after dataflow has been analyzed (will be root OR child of root)
+	 */
+	public static ActionListNode buildAndAnalyze(Action[] actions) {
+		// Iterate until fixed point is reached
+		boolean repeat;
+		ActionListNode root = ActionListNode.build(actions);
+		do {
+			repeat = false;
+			ActionListNode next = root.getLinearNext();
+			while (next != null) {
+				repeat |= next.analyzeDataflow();
+				next = next.getLinearNext();
+			}
+		} while (repeat);
+		
+		ActionListNode firstUseful = root.getLinearNext();
+		return firstUseful;
+	}
+	
 	public void print() {
 		System.out.println(dataflow_set);
 		

@@ -30,19 +30,7 @@ public class UsageExample {
 				new ActionLoadImpl(y, x) // 8
 		};
 		
-		// Iterate until fixed point is reached
-		boolean repeat;
-		ActionListNode root = ActionListNode.build(actions);
-		do {
-			repeat = false;
-			ActionListNode next = root.getLinearNext();
-			while (next != null) {
-				repeat |= next.analyzeDataflow();
-				next = next.getLinearNext();
-			}
-		} while (repeat);
-		
-		ActionListNode next = root.getLinearNext();
+		ActionListNode next = ActionListNode.buildAndAnalyze(actions);
 		next.print();
 	}
 
