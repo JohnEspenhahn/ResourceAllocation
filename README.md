@@ -46,7 +46,7 @@ If we have at most 4 "real" resources, and the following "virtual" resources use
 8: y  = x
 ```
 
-We get the following result, where *tx*[*y*] means virtual resource *tx* becomes real resource *y*, and *{...}* is the set of live variables at a point in code execution
+We get the following result, where *tx*[*y*] means virtual resource *tx* becomes real resource *y*, and *{[...]}* is the set of live variables at a point in code execution
 ```
 0: t0[1] = GTR(x[0],z[2])    {[x[0], z[2]]}
 1: NOT_IF t0[1] GOTO 8       {[x[0], t0[1], z[2]]}
