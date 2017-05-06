@@ -62,7 +62,7 @@ We get the following result, where *tx*[*y*] means virtual resource *tx* becomes
 Which, written more simply, is the following code using only real resources (*r*)
 ```
 r0 = x
-r2 = y
+r2 = z
 0: r1 = GTR(r0,r2)
 1: NOT_IF r1 GOTO 8
 2: r1 = SUB(r0,r2)
