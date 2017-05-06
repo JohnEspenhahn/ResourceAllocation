@@ -10,13 +10,18 @@ import org.espenhahn.allocate.likecompiler.actions.ActionSubExpressionImpl;
 public class UsageExample {
 
 	public static void main(String[] args) {
-		Resource t0 = new ResourceImpl("t0"),
-				 t1 = new ResourceImpl("t1"),
-				 t2 = new ResourceImpl("t2"),
-				 t3 = new ResourceImpl("t3"),
-				 x = new ResourceImpl("x"),
-				 y = new ResourceImpl("y"),
-				 z = new ResourceImpl("z");
+		ResourceInterferable
+				 t0 = new ResourceInterferableImpl("t0"),
+				 t1 = new ResourceInterferableImpl("t1"),
+				 t2 = new ResourceInterferableImpl("t2"),
+				 t3 = new ResourceInterferableImpl("t3"),
+				 x = new ResourceInterferableImpl("x"),
+				 y = new ResourceInterferableImpl("y"),
+				 z = new ResourceInterferableImpl("z");
+		
+		ResourceInterferable[] resources = new ResourceInterferable[] {
+				t0, t1, t2, t3, x, y, z
+		};
 		
 		Action[] actions = new Action[] {
 				new ActionBinaryImpl(ActionSubExpressionImpl.Action.GTR, t0, x, z), // 0
@@ -30,8 +35,10 @@ public class UsageExample {
 				new ActionLoadImpl(y, x) // 8
 		};
 		
-		ActionListNode next = ActionListNode.buildAndAnalyze(actions);
+		ActionListNode next = ActionListNode.buildAndAnalyze(actions, resources);
 		next.print();
+		
+		
 	}
 
 }

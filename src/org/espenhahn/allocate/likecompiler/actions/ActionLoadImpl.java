@@ -43,5 +43,10 @@ public class ActionLoadImpl implements Action {
 	public boolean dataflowFollowJumpNext() {
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return out() + "=" + in[0].toString(); 
+	}
 
 }

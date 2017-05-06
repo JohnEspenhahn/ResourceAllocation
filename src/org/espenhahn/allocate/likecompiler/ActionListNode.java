@@ -1,13 +1,17 @@
 package org.espenhahn.allocate.likecompiler;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.espenhahn.allocate.util.MinHeap;
 
 public class ActionListNode {
 
 	private String lbl;
 	
-	private Action a;
+	private Action action;
 	private ActionListNode next;
 	private ActionListNode jmp_action;
 	private Set<Resource> dataflow_set;
@@ -15,7 +19,7 @@ public class ActionListNode {
 	private ActionListNode(String lbl, Action a) {
 		this.lbl = lbl;
 		
-		this.a = a;
+		this.action = a;
 		this.dataflow_set = new HashSet<Resource>();
 	}
 	
@@ -48,9 +52,11 @@ public class ActionListNode {
 	/**
 	 * Convert the given actions to an ActionList, then analyzeDataflow for the entire list
 	 * @param actions
+	 * @param resource_in All the (temporary) resources used in the actions
 	 * @return The first useful node after dataflow has been analyzed (will be root OR child of root)
 	 */
-	public static ActionListNode buildAndAnalyze(Action[] actions) {
+	@SuppressWarnings("unchecked")
+	public static ActionListNode buildAndAnalyze(Action[] actions, ResourceInterferable[] resource_in) {
 		// Iterate until fixed point is reached
 		boolean repeat;
 		ActionListNode root = ActionListNode.build(actions);
@@ -63,12 +69,45 @@ public class ActionListNode {
 			}
 		} while (repeat);
 		
-		ActionListNode firstUseful = root.getLinearNext();
-		return firstUseful;
+		// Create edges (each resource interferes with other resources in same dataflow set)
+		ActionListNode next = root.getLinearNext();
+		while (next != null) {
+			ResourceInterferable[] set = next.dataflow_set.toArray(new ResourceInterferable[next.dataflow_set.size()]);
+			for (int i = 0; i < set.length-1; i++) {
+				ResourceInterferable r1 = set[i];
+				for (int j = i+1; j < set.length; j++) {
+					ResourceInterferable r2 = set[j];
+					
+					r1.addInterferance(r2);
+					r2.addInterferance(r1);
+				}
+			}
+			
+			next = next.getLinearNext();
+		}
+		
+		List<ResourceInterferable> order = new ArrayList<ResourceInterferable>(resource_in.length);
+		MinHeap<ResourceInterferable> heap = new MinHeap<ResourceInterferable>(resource_in);
+		while (!heap.isEmpty()) { // O(n^2)
+			// Removing will change all weights, so need to rebuild
+			ResourceInterferable r = heap.removemin();
+			order.add(r); // O(lg n)
+			r.onBeingRemoved();
+			
+			heap.buildheap(); // O(n)
+		}
+		
+		// Try to assign colors
+		for (ResourceInterferable r: order) {
+			r.assignColor();
+		}
+		
+		return root.getLinearNext();
 	}
 	
 	public void print() {
-		System.out.println(dataflow_set);
+		// System.out.print(dataflow_set);
+		System.out.println(action.toString() + " {" + dataflow_set + "}");
 		
 		ActionListNode next = getLinearNext();
 		if (next != null) next.print();
@@ -77,7 +116,7 @@ public class ActionListNode {
 	public ActionListNode evaluate() {
 		if (isInvalid()) throw new RuntimeException();
 		
-		boolean branch = a.evaluate();
+		boolean branch = action.evaluate();
 		if (branch) return getJumpNext();
 		else return getLinearNext();
 	}
@@ -99,11 +138,11 @@ public class ActionListNode {
 	}
 	
 	private void setInvalid() {
-		this.a = null;
+		this.action = null;
 	}
 	
 	private boolean isInvalid() {
-		return a == null;
+		return action == null;
 	}
 	
 	public void setNext(ActionListNode n) {
@@ -115,10 +154,10 @@ public class ActionListNode {
 	}
 	
 	public void insertBefore(Action a) {	
-		ActionListNode n = new ActionListNode(this.lbl + "*", this.a); // Move this value ahead one
+		ActionListNode n = new ActionListNode(this.lbl + "*", this.action); // Move this value ahead one
 		n.setNext(this.next);
 		
-		this.a = a; // Insert new value at this location (to make jumps still valid)
+		this.action = a; // Insert new value at this location (to make jumps still valid)
 		this.setNext(n);
 	}
 	
@@ -128,7 +167,7 @@ public class ActionListNode {
 	}
 	
 	protected Action getAction() {
-		return a;
+		return action;
 	}
 	
 	protected Set<Resource> getDataflowSet() {

@@ -55,6 +55,11 @@ public class ActionConditionalBranchImpl implements Action {
 		return true;
 	}
 	
+	@Override
+	public String toString() {
+		return op.toString() + " " + rs[0].toString() + " GOTO " + getBranchAddress();
+	}
+	
 	public enum Action {
 		IF, NOT_IF
 	}

@@ -42,5 +42,10 @@ public class ActionBranchImpl implements Action {
 	public boolean dataflowFollowJumpNext() {
 		return true;
 	}
+	
+	@Override
+	public String toString() {
+		return "GOTO " + getBranchAddress();
+	}
 
 }

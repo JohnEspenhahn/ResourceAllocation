@@ -1,5 +1,8 @@
 package org.espenhahn.allocate.likecompiler.actions;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.espenhahn.allocate.likecompiler.Resource;
 
 /**
@@ -62,6 +65,11 @@ public class ActionSubExpressionImpl {
 		} else {
 			return false;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return op.toString() + "(" + Arrays.stream(ins).map(Object::toString).collect(Collectors.joining(",")) + ")";
 	}
 	
 	public enum Action {

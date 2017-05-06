@@ -45,5 +45,10 @@ public class ActionLoadLitImpl implements Action {
 	public boolean dataflowFollowJumpNext() {
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return out() + "=" + lit;
+	}
 
 }

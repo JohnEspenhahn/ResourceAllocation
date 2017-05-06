@@ -61,5 +61,10 @@ public class ActionBinaryImpl implements Action {
 			return false;
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return out() + "=" + sub.toString();
+	}
 
 }
