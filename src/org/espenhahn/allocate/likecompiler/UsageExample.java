@@ -6,10 +6,17 @@ import org.espenhahn.allocate.likecompiler.actions.ActionConditionalBranchImpl;
 import org.espenhahn.allocate.likecompiler.actions.ActionLoadImpl;
 import org.espenhahn.allocate.likecompiler.actions.ActionLoadLitImpl;
 import org.espenhahn.allocate.likecompiler.actions.ActionSubExpressionImpl;
+import org.espenhahn.allocate.likecompiler.color.AssignedColorFactoryImpl;
+import org.espenhahn.allocate.likecompiler.color.AssignedColorFactoryService;
 
 public class UsageExample {
 
 	public static void main(String[] args) {
+		// Set max real resources
+		final int max_real_resources = 4;
+		AssignedColorFactoryService.setFactory(new AssignedColorFactoryImpl(max_real_resources));
+		
+		// Init virtual resources
 		ResourceInterferable
 				 t0 = new ResourceInterferableImpl("t0"),
 				 t1 = new ResourceInterferableImpl("t1"),
@@ -23,6 +30,7 @@ public class UsageExample {
 				t0, t1, t2, t3, x, y, z
 		};
 		
+		// Init tuple code
 		Action[] actions = new Action[] {
 				new ActionBinaryImpl(ActionSubExpressionImpl.Action.GTR, t0, x, z), // 0
 				new ActionConditionalBranchImpl(ActionConditionalBranchImpl.Action.NOT_IF, t0, 8), // 1
@@ -35,7 +43,10 @@ public class UsageExample {
 				new ActionLoadImpl(y, x) // 8
 		};
 		
+		// Analyze
 		ActionListNode next = ActionListNode.buildAndAnalyze(actions, resources);
+		
+		// Print result
 		next.print();
 		
 		
