@@ -22,9 +22,16 @@ public interface ProposerRemote<E> extends Remote {
 	void rejectProposal(int proposalNumber, Proposal<E> outstandingProposal);
 	
 	/**
+	 * Called by acceptor if the acceptor has gotten a better proposal since it accepted the given proposal
+	 * @param proposalNumber The better proposal number
+	 * @param outstandingProposal (Nullable) The proposal previously accepted for a larger proposal number
+	 */
+	void rejectAcceptRequest(int proposalNumber, Proposal<E> outstandingProposal);
+	
+	/**
 	 * Called by acceptor to inform the proposer that its accept request was infact accepted (aka learned)
 	 * @param proposal The proposal that was acccepted
 	 */
-	void proposerLearn(Proposal<E> proposal);
+//	void proposerLearn(Proposal<E> proposal);
 	
 }

@@ -3,39 +3,70 @@ package org.espenhahn.allocate.likepaxos;
 import java.rmi.Remote;
 import java.util.List;
 
-public class PaxosServer extends LearnerImpl<String> implements Remote, AcceptListener<String> {
+public class PaxosServer extends LearnerImpl<Short> implements Remote, AcceptListener<Short>, LearnListener<Short> {
 
-	private final int id = (int) (Math.random()*Integer.MAX_VALUE);
-	private Object servers;
+	private short myID;
+	private List<?> servers;
+	
+	private short nextProposalNumber;
 	
 	public PaxosServer() {
-		super(true);
+		super(false);
 		
 		setListeners(this, this);
 	}
 	
-	public void setServers(List<PaxosServer> servers) {
+	/**
+	 * Every server needs to be assigned a globally unique, final id
+	 * @param id
+	 * @param servers
+	 */
+	public void setup(short id, List<PaxosServer> servers) {
+		this.myID = id;
 		this.servers = servers;
 		
 		// Propose self as leader
-		this.resendPromiseRequest(id);
+		this.sendPromiseRequest();
+	}
+	
+	@Override
+	public int getNextProposalNumber() {
+		return myID | ((nextProposalNumber++) << 16);
+	}
+	
+	@Override
+	public void forceProposalNumberAbove(int proposalNumber) {
+		int prevProposalNumber = (proposalNumber >> 16);
+		nextProposalNumber = (short) (prevProposalNumber+1);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<LearnerRemote<String>> getLearners() {
-		return (List<LearnerRemote<String>>) servers;
+	public List<LearnerRemote<Short>> getLearners() {
+		return (List<LearnerRemote<Short>>) servers;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<AcceptorRemote<String>> getAcceptors() {
-		return (List<AcceptorRemote<String>>) servers;
+	public List<AcceptorRemote<Short>> getAcceptors() {
+		return (List<AcceptorRemote<Short>>) servers;
+	}
+	
+	@Override
+	public Proposal<Short> getProposal(int proposalNumber, Short value) {
+		if (value == null) value = myID;  // If no value given, can be any (aka the value I want)
+		return new ProposalImpl<Short>(proposalNumber, value);
+	}
+	
+	@Override
+	public void onAccept(int proposalNumber) {
+		System.out.println("onAccept with proposal number " + proposalNumber);
 	}
 
 	@Override
-	public void onAccept(int proposalNumber, String value) {
-		this.sendAcceptRequest(new ProposalImpl<String>(proposalNumber, value));
+	public void onLearned(Short value) { 
+		System.out.println("onLearned value " + value);
 	}
+	
 	
 }

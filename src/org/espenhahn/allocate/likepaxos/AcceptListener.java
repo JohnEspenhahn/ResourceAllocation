@@ -2,6 +2,10 @@ package org.espenhahn.allocate.likepaxos;
 
 public interface AcceptListener<E> {
 
-	void onAccept(int proposalNumber, E value);
+	/**
+	 * Called in proposer when enough acceptors accept
+	 * @param proposalNumber The proposalNumber being accepted
+	 */
+	void onAccept(int proposalNumber);
 	
 }

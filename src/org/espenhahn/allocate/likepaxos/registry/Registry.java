@@ -16,8 +16,9 @@ public class Registry {
 		if (servers.size() < NUM_PROPOSERS) {
 			servers.add(j.getServer());
 			if (servers.size() == NUM_PROPOSERS) {
+				short id = 1;
 				for (PaxosServer s: servers) {
-					s.setServers(servers);
+					s.setup(id++, servers);
 				}
 			}
 		}
