@@ -31,7 +31,12 @@ public class PaxosServer extends LearnerImpl<Short> implements Remote, AcceptLis
 	
 	@Override
 	public int getNextProposalNumber() {
-		return myID | ((nextProposalNumber++) << 16);
+		int pn = myID | ((nextProposalNumber++) << 16);
+		
+		// This is a cheap way to create proposal numbers, but won't work well in long-run
+		if (pn <= 0) throw new RuntimeException("Ran out of proposal numbers!");
+		
+		return pn;
 	}
 	
 	@Override
