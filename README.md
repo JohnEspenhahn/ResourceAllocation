@@ -1,9 +1,13 @@
 # ResourceAllocation
 Various resource allocation schemes
 
+[Compiler-Like](#compilerlike)
+
+[Distributed Allocation (Paxos-Like)](#likepaxos)
+
 ## compilerlike
 
-Allocate resources like registers are allocated in a compiler. See "UsageExample" in the corresponding package for an example.
+Convert an arbitrary set of "virtual" resources into a close to minimal set of "real" resources required to execute a series of tuple instructions (like how registers are allocated in a compiler). See "UsageExample" in the corresponding package for an example.
 
 ### Dataflow Analysis
 
@@ -74,3 +78,13 @@ r2 = z
 8: r0 = r0 // Because this is end of execution, we get a non-op
 ```
 So our code has been simplified from 7 virtual resources, to 3 real ones
+
+## likepaxos
+
+Paxos is a protocol for solving consensus problems in a network of unreliable processors. In Paxos there are three types of processes, Proposer/Acceptor/Learner. I have created interfaces for each of these, but in my implemention I treat each process as a "server" which is all three.
+
+#### Leader Election
+
+To guarantee progress will be made in a distributed consensus algorithm, we need to avoid [livelock](https://en.wikipedia.org/wiki/Deadlock#Livelock). Paxos does this by "electing" a leader, and in fact Paxos itself can be used to elect a leader.
+
+My first implementation of Paxos is specifically targeted to solve the leader election problem. I will then expand it to allow distributed resource allocation. 
