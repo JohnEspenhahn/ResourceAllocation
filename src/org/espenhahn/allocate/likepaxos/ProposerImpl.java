@@ -1,14 +1,24 @@
 package org.espenhahn.allocate.likepaxos;
 
+import java.rmi.RemoteException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
-import org.espenhahn.allocate.likepaxos.registry.Registry;
+import org.espenhahn.allocate.likepaxos.registry.PaxosRegistryImpl;
 
 public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemote<E> {
-
-	private boolean waiting = false;
 	
+	// Timer
+	private static final int TIMEOUT_TIME = 2;
+	private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private final Runnable reproposeEvent = () -> repropose();
+	
+	/** Timeout for waiting for promise responses from acceptors */
+	private ScheduledFuture<?> promiseTimer;
 	private int waitingForProposalNumber = -1;
 	
 	/** Acceptors that have accepted the last proposal */
@@ -19,13 +29,12 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	private Proposal<E> maxPrevProposal;
 	
 	// Config
-	private final boolean repropose;
+	protected boolean shouldRepropose;
 	private AcceptListener<E> acceptListener;
 	private LearnListener<E> learnListener;
 	
-	public ProposerImpl(boolean repropose) {
-		this.repropose = repropose;
-		
+	public ProposerImpl() {
+		this.shouldRepropose = true;
 		this.accepted = new LinkedList<AcceptorRemote<E>>();
 	}
 	
@@ -36,54 +45,66 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 
 	@Override
 	public int getCountForMajority() {
-		return Registry.NUM_MAJORITY;
+		return PaxosRegistryImpl.NUM_MAJORITY;
 	}
 	
 	@Override
-	public void sendPromiseRequest() {
-		resendPromiseRequest(getNextProposalNumber());
-	}
-
-	@Override
-	public synchronized void resendPromiseRequest(int proposalNumber) {
-		if (proposalNumber <= waitingForProposalNumber) return; // Ignore abandoned or already sent
+	public synchronized void sendPromiseRequest() {
+		cancelPromiseTimer();
 		
-//		this.waiting = true;
 		this.rejectCount = 0;
 		this.accepted.clear();
 //		this.maxPrevProposal = null;
-		this.waitingForProposalNumber = proposalNumber;
+//		this.waitingForPromise = true;
+		this.waitingForProposalNumber = getNextProposalNumber();
+		
+		this.promiseTimer = executor.schedule(reproposeEvent, TIMEOUT_TIME, TimeUnit.SECONDS);
 		
 		for (AcceptorRemote<E> a: getAcceptors()) {
-			a.promiseRequest(this, proposalNumber);
+			try {
+				a.promiseRequest(this, waitingForProposalNumber);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
+	}
+	
+	protected int getWaitingForProposalNumber() {
+		return waitingForProposalNumber;
+	}
+	
+	private void cancelPromiseTimer() {
+		if (promiseTimer != null)
+			promiseTimer.cancel(false);
+	}
+	
+	private void repropose() {		
+		if (maxPrevProposal != null) 
+			resendPromiseRequest(maxPrevProposal.getProposalNumber());
+		else 
+			sendPromiseRequest();
 	}
 
 	@Override
 	public void acceptProposal(AcceptorRemote<E> acceptor, int proposalNumber, Proposal<E> prevProposal) {
-		boolean didAccept = false;
+		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal
 		
-		synchronized (this) {
-			if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal
+		accepted.add(acceptor);
+		
+		// Keep track of max previous proposal value
+		if (prevProposal != null && (maxPrevProposal == null || prevProposal.getProposalNumber() > maxPrevProposal.getProposalNumber()))
+			this.maxPrevProposal = prevProposal;
+		
+		// Notify
+		if (accepted.size() >= getCountForMajority()) {
+			E value = (maxPrevProposal != null ? maxPrevProposal.getValue() : null);
 			
-			accepted.add(acceptor);
+			waitingForProposalNumber += 1; // stop waiting for this proposal, only listen for any subsequent ones
+			sendAcceptRequest(getProposal(proposalNumber, value));
 			
-			// Keep track of max previous proposal value
-			if (prevProposal != null && (this.maxPrevProposal == null || prevProposal.getProposalNumber() > this.maxPrevProposal.getProposalNumber()))
-				this.maxPrevProposal = prevProposal;
-			
-			// Notify
-			if (accepted.size() > this.getCountForMajority()) {
-				didAccept = true;
-				E value = (maxPrevProposal != null ? maxPrevProposal.getValue() : null);
-				
-//				waiting = false;
-				sendAcceptRequest(getProposal(proposalNumber, value));
-			}
+			// Notify listener
+			if (acceptListener != null) acceptListener.onAccept(proposalNumber);
 		}
-		
-		// Don't want this part to be synchronized, call to outside object
-		if (didAccept && acceptListener != null) acceptListener.onAccept(proposalNumber);
 	}
 
 	@Override
@@ -95,20 +116,22 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 			this.maxPrevProposal = outstandingProposal;
 		
 		this.rejectCount += 1;
-		if (repropose && rejectCount >= this.getCountForMajority()) {
-			// Re-propose with larger proposal number
-			if (maxPrevProposal != null) forceProposalNumberAbove(maxPrevProposal.getProposalNumber());
-			sendPromiseRequest();
+		if (shouldRepropose && rejectCount >= getCountForMajority()) {
+			repropose();
 		}
 	}
 
 	@Override
 	public synchronized void sendAcceptRequest(Proposal<E> proposal) {
-		if (proposal.getProposalNumber() < waitingForProposalNumber) return; // Ignore abandoned
+		cancelPromiseTimer();
 		
 		this.rejectCount = 0; // reuse for accept request rejection
 		for (AcceptorRemote<E> a: accepted) {
-			a.acceptRequest(this, proposal);
+			try {
+				a.acceptRequest(this, proposal);
+			} catch (RemoteException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

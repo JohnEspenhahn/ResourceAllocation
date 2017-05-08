@@ -11,12 +11,6 @@ public interface ProposerLocal<E> extends PaxosObject {
 	 * @return The proposal number
 	 */
 	int getNextProposalNumber();
-	
-	/**
-	 * After a proposal failure, force the next proposal number to be greater than the given one
-	 * @param proposalNumber The proposal number that my next proposal number must be greater than
-	 */
-	void forceProposalNumberAbove(int proposalNumber);
 
 	/**
 	 * Send a proposal to a quorum of acceptors
