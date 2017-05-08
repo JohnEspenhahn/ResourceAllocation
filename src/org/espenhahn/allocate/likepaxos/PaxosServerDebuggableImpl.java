@@ -13,9 +13,11 @@ import inputport.rpc.GIPCRegistry;
 
 public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServerDebuggable {
 
-	public boolean acceptorSetLargestProposalNumber(int proposalNumber) {
+	// TODO make blocking, but doesn't work when [Client 1 Proxy -> Server Proxy -> Client 2 Local Impl]
+	public void acceptorSetLargestProposalNumber(int proposalNumber) {
+		System.out.println("[Learner] Forcing Largest Proposal Number " + proposalNumber);
+		
 		largestProposalNumber = proposalNumber;
-		return true;
 	}
 
 	public void setup(short id, List<PaxosServerDebuggable> servers) throws RemoteException {
@@ -24,7 +26,7 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 		System.out.println("Setup as " + id);
 
 		// Make minority fail on first request
-		for (int i = 0; i < this.getCountForMajority() - 1; i++) {
+		for (int i = 0; i < this.getCountForMajority(); i++) {
 			PaxosServerDebuggable s = servers.get(i);
 			s.acceptorSetLargestProposalNumber(0x20000);
 		}
@@ -37,7 +39,6 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 
 		PaxosServerDebuggableImpl psd = new PaxosServerDebuggableImpl();
 
-//		SerializerSelector.setSerializerFactory(new MySerializerFactory());
 		GIPCRegistry gipc_registry = GIPCLocateRegistry.getRegistry(ip, PaxosRegistryImpl.GIPC_PORT, UUID.randomUUID().toString());
 		PaxosRegistry reg = (PaxosRegistry) gipc_registry.lookup(PaxosRegistry.class, PaxosRegistryImpl.SERVER_NAME);
 		reg.join(psd);

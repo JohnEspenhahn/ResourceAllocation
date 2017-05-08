@@ -24,7 +24,6 @@ public class PaxosRegistryImpl implements PaxosRegistry {
 	public static void main(String[] args) throws RemoteException {
 		PaxosRegistryImpl server = new PaxosRegistryImpl();
 		
-//		SerializerSelector.setSerializerFactory(new MySerializerFactory());
 		GIPCRegistry reg = GIPCLocateRegistry.createRegistry(GIPC_PORT);
 		reg.rebind(SERVER_NAME, server);
 		

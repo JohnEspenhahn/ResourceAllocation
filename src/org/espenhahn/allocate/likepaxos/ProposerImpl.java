@@ -60,6 +60,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		
 		this.promiseTimer = executor.schedule(reproposeEvent, TIMEOUT_TIME, TimeUnit.SECONDS);
 		
+		System.err.println("[Proposer] Sending proposal " + waitingForProposalNumber);
 		for (AcceptorRemote<E> a: getAcceptors()) {
 			try {
 				a.promiseRequest(this, waitingForProposalNumber);
@@ -87,9 +88,10 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 
 	@Override
 	public void acceptProposal(AcceptorRemote<E> acceptor, int proposalNumber, Proposal<E> prevProposal) {
-		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal
-		
+		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal		
 		accepted.add(acceptor);
+		
+		System.out.println("[Proposer] Proposal accepted " + proposalNumber + " (" + accepted.size() + "/" + getCountForMajority() + ")");
 		
 		// Keep track of max previous proposal value
 		if (prevProposal != null && (maxPrevProposal == null || prevProposal.getProposalNumber() > maxPrevProposal.getProposalNumber()))
@@ -99,6 +101,8 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		if (accepted.size() >= getCountForMajority()) {
 			E value = (maxPrevProposal != null ? maxPrevProposal.getValue() : null);
 			
+			System.out.println("[Proposer] Proposal accepted quorum for " + proposalNumber + " with previous value " + value);
+			
 			waitingForProposalNumber += 1; // stop waiting for this proposal, only listen for any subsequent ones
 			sendAcceptRequest(getProposal(proposalNumber, value));
 			
@@ -107,16 +111,18 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		}
 	}
 
+	// TODO re-enable
 	@Override
 	public synchronized void rejectProposal(int proposalNumber, Proposal<E> outstandingProposal) {
 		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal
+		System.out.println("[Proposer] Proposal rejected " + proposalNumber);
 		
 		// Keep track of max previous proposal value
 		if (outstandingProposal != null && (maxPrevProposal == null || outstandingProposal.getProposalNumber() > maxPrevProposal.getProposalNumber()))
 			this.maxPrevProposal = outstandingProposal;
 		
 		this.rejectCount += 1;
-		if (shouldRepropose && rejectCount >= getCountForMajority()) {
+		if (shouldRepropose && rejectCount >= getCountForMajority()) {			
 			repropose();
 		}
 	}
@@ -124,6 +130,8 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	@Override
 	public synchronized void sendAcceptRequest(Proposal<E> proposal) {
 		cancelPromiseTimer();
+		
+		System.out.println("[Proposer] Sending accept request " + proposal.getProposalNumber() + " with value " + proposal.getValue());
 		
 		this.rejectCount = 0; // reuse for accept request rejection
 		for (AcceptorRemote<E> a: accepted) {
@@ -136,9 +144,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	}
 	
 	@Override
-	public synchronized void rejectAcceptRequest(int proposalNumber, Proposal<E> outstandingProposal) {
-		rejectProposal(proposalNumber, outstandingProposal); // TODO
-		
+	public synchronized void rejectAcceptRequest(int proposalNumber, Proposal<E> outstandingProposal) {		
 		// TODO proposer needs to know from learners at some point if its value was learened
 	}
 	
