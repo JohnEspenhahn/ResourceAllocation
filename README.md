@@ -5,7 +5,7 @@ Various resource allocation schemes
 
 [Distributed Allocation (Paxos-Like)](#likepaxos)
 
-## compilerlike
+# compilerlike
 
 Convert an arbitrary set of "virtual" resources into a close to minimal set of "real" resources required to execute a series of tuple instructions (like how registers are allocated in a compiler). See "UsageExample" in the corresponding package for an example.
 
@@ -79,7 +79,7 @@ r2 = z
 ```
 So our code has been simplified from 7 virtual resources, to 3 real ones
 
-## likepaxos
+# likepaxos
 
 Paxos is a protocol for solving consensus problems in a network of unreliable processors. In Paxos there are three types of processes, Proposer/Acceptor/Learner. I have created interfaces for each of these, but in my implemention I treat each process as a "server" which is all three.
 
