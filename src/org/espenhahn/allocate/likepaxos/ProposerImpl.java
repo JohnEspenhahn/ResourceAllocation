@@ -19,7 +19,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	
 	/** Timeout for waiting for promise responses from acceptors */
 	private ScheduledFuture<?> promiseTimer;
-	private int waitingForProposalNumber = -1;
+	private double waitingForProposalNumber = -1;
 	
 	/** Acceptors that have accepted the last proposal */
 	private List<AcceptorRemote<E>> accepted;
@@ -70,7 +70,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		}
 	}
 	
-	protected int getWaitingForProposalNumber() {
+	protected double getWaitingForProposalNumber() {
 		return waitingForProposalNumber;
 	}
 	
@@ -87,7 +87,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	}
 
 	@Override
-	public void acceptProposal(AcceptorRemote<E> acceptor, int proposalNumber, Proposal<E> prevProposal) {
+	public void acceptProposal(AcceptorRemote<E> acceptor, double proposalNumber, Proposal<E> prevProposal) {
 		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal		
 		accepted.add(acceptor);
 		
@@ -111,21 +111,20 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		}
 	}
 
-	// TODO re-enable
-	@Override
-	public synchronized void rejectProposal(int proposalNumber, Proposal<E> outstandingProposal) {
-		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal
-		System.out.println("[Proposer] Proposal rejected " + proposalNumber);
-		
-		// Keep track of max previous proposal value
-		if (outstandingProposal != null && (maxPrevProposal == null || outstandingProposal.getProposalNumber() > maxPrevProposal.getProposalNumber()))
-			this.maxPrevProposal = outstandingProposal;
-		
-		this.rejectCount += 1;
-		if (shouldRepropose && rejectCount >= getCountForMajority()) {			
-			repropose();
-		}
-	}
+//	@Override
+//	public synchronized void rejectProposal(double proposalNumber, Proposal<E> outstandingProposal) {
+//		if (proposalNumber < waitingForProposalNumber) return; // Ignore if abandoned proposal
+//		System.out.println("[Proposer] Proposal rejected " + proposalNumber);
+//		
+//		// Keep track of max previous proposal value
+//		if (outstandingProposal != null && (maxPrevProposal == null || outstandingProposal.getProposalNumber() > maxPrevProposal.getProposalNumber()))
+//			this.maxPrevProposal = outstandingProposal;
+//		
+//		this.rejectCount += 1;
+//		if (shouldRepropose && rejectCount >= getCountForMajority()) {			
+//			repropose();
+//		}
+//	}
 
 	@Override
 	public synchronized void sendAcceptRequest(Proposal<E> proposal) {
@@ -143,15 +142,9 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		}
 	}
 	
-	@Override
-	public synchronized void rejectAcceptRequest(int proposalNumber, Proposal<E> outstandingProposal) {		
-		// TODO proposer needs to know from learners at some point if its value was learened
-	}
-	
 //	@Override
-//	public void proposerLearn(Proposal<E> proposal) {
-//		// don't want this part to be synchronized, call to outside object
-//		if (learnListener != null) learnListener.onLearned(proposal.getValue());
+//	public synchronized void rejectAcceptRequest(double betterProposalNumber, Proposal<E> outstandingProposal) {		
+//		// TODO proposer needs to know from learners at some point if its value was learened
 //	}
 
 }

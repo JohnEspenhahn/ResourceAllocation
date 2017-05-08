@@ -14,7 +14,7 @@ import inputport.rpc.GIPCRegistry;
 public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServerDebuggable {
 
 	// TODO make blocking, but doesn't work when [Client 1 Proxy -> Server Proxy -> Client 2 Local Impl]
-	public void acceptorSetLargestProposalNumber(int proposalNumber) {
+	public void acceptorSetLargestProposalNumber(double proposalNumber) {
 		System.out.println("[Learner] Forcing Largest Proposal Number " + proposalNumber);
 		
 		largestProposalNumber = proposalNumber;
@@ -28,7 +28,7 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 		// Make minority fail on first request
 		for (int i = 0; i < this.getCountForMajority(); i++) {
 			PaxosServerDebuggable s = servers.get(i);
-			s.acceptorSetLargestProposalNumber(0x20000);
+			s.acceptorSetLargestProposalNumber(1);
 		}
 
 		this.sendPromiseRequest();

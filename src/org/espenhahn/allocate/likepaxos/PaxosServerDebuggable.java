@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface PaxosServerDebuggable extends LearnerRemote<Short>, AcceptorRemote<Short>, ProposerRemote<Short> {
 
-	void acceptorSetLargestProposalNumber(int proposalNumber) throws RemoteException;
+	void acceptorSetLargestProposalNumber(double proposalNumber) throws RemoteException;
 	
 	void setup(short id, List<PaxosServerDebuggable> servers) throws RemoteException;
 	

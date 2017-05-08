@@ -6,6 +6,6 @@ public interface AcceptListener<E> {
 	 * Called in proposer when enough acceptors accept
 	 * @param proposalNumber The proposalNumber being accepted
 	 */
-	void onAccept(int proposalNumber);
+	void onAccept(double proposalNumber);
 	
 }

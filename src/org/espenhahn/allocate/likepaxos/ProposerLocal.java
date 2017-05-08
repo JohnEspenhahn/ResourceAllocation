@@ -10,7 +10,7 @@ public interface ProposerLocal<E> extends PaxosObject {
 	 * Get the next, globally unique, proposal number for this proposer
 	 * @return The proposal number
 	 */
-	int getNextProposalNumber();
+	double getNextProposalNumber();
 
 	/**
 	 * Send a proposal to a quorum of acceptors
@@ -21,7 +21,7 @@ public interface ProposerLocal<E> extends PaxosObject {
 	 * If a previous proposal failed, try to repropose with new information given by acceptors
 	 * @param proposalNumber The largest previous proposalNumber returned from acceptors
 	 */
-	void resendPromiseRequest(int proposalNumber);
+	void resendPromiseRequest(double proposalNumber);
 	
 	/**
 	 * Called in proposer when enough acceptors accept
@@ -29,7 +29,7 @@ public interface ProposerLocal<E> extends PaxosObject {
 	 * @param value (Nullable) The value from a previous proposal with the largest proposalNumber less than or equal to this proposalNumber
 	 * @return The proposal to send in the accept request
 	 */
-	Proposal<E> getProposal(int proposalNumber, E value);
+	Proposal<E> getProposal(double proposalNumber, E value);
 	
 	/**
 	 * Send accept request for give proposal to acceptors

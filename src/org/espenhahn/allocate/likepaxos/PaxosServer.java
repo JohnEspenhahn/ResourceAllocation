@@ -9,7 +9,7 @@ public class PaxosServer extends LearnerImpl<Short> {
 	private short myID;
 	private List<?> servers;
 	
-	private short nextProposalNumber;
+	private int nextProposalNumber;
 	
 	public PaxosServer() {
 		super();
@@ -40,26 +40,26 @@ public class PaxosServer extends LearnerImpl<Short> {
 	}
 	
 	@Override
-	public int getNextProposalNumber() {
-		int pn = myID | ((++nextProposalNumber) << 16);
-		
-		// This is a cheap way to create proposal numbers, but won't work well in long-run
+	public double getNextProposalNumber() {
+		double pn = nextProposalNumber + (myID / 1000.0);
+		nextProposalNumber += 1;
+
 		if (pn <= 0) throw new RuntimeException("Ran out of proposal numbers!");
 		
 		return pn;
 	}
 	
 	@Override
-	public void resendPromiseRequest(int proposalNumber) {
+	public void resendPromiseRequest(double proposalNumber) {
 		// Force proposal number above
-		nextProposalNumber = (short) Math.max(nextProposalNumber, proposalNumber >> 16);
+		nextProposalNumber = (int) Math.max(nextProposalNumber, Math.floor(proposalNumber));
 		
 		// send the promise request
 		sendPromiseRequest();
 	}
 	
 	@Override
-	public Proposal<Short> getProposal(int proposalNumber, Short value) {
+	public Proposal<Short> getProposal(double proposalNumber, Short value) {
 		if (value == null) value = myID;  // If no value given, can be any (aka the value I want)
 		return new ProposalImpl<Short>(proposalNumber, value);
 	}

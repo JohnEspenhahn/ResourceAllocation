@@ -12,7 +12,7 @@ public interface AcceptorRemote<E> {
 	 * @param proposer The proposer that is proposing
 	 * @param proposalNumber The proposalNumber
 	 */
-	void promiseRequest(ProposerRemote<E> proposer, int proposalNumber) throws RemoteException;
+	void promiseRequest(ProposerRemote<E> proposer, double proposalNumber) throws RemoteException;
 	
 	/**
 	 * Called from Proposer. If proposalNumber is less than the largest proposalNumber accepted in propose, ignore it. Otherwise

@@ -4,7 +4,7 @@ import java.rmi.Remote;
 
 public abstract class LearnerImpl<E> extends AcceptorImpl<E> implements LearnerLocal<E>, LearnerRemote<E> {
 
-	private int currentProposalNumber;
+	private double currentProposalNumber;
 	private int countForCurrentProposal;
 	
 	@Override
@@ -25,7 +25,7 @@ public abstract class LearnerImpl<E> extends AcceptorImpl<E> implements LearnerL
 				countForCurrentProposal = 0;
 			}
 		} else {
-			System.out.println("[Learner] Ignoring learn " + proposal.getProposalNumber());
+			System.err.println("[Learner] Ignoring learn " + proposal.getProposalNumber());
 		}
 	}
 	
