@@ -89,40 +89,61 @@ To simplify the problem, for my IPC mechanism I will be using GIPC. [GIPC](https
 
 In traditional Paxos we assume an unreliable network, but GIPC is implemented on top of reliable TCP sockets. This means the problem is similfied, as messages between two processes are guaranteed to not be lost in the network, and are guaranteed to be delivered in order. This means my implementation of Paxos will be slow, but it will still have most of the interesting problems Paxos solves. For example, even though TPC provides a reliable abstraction of the network, the end nodes themselves can still die and introduce interesting consistency problems. Also, in order delivery between two nodes provides no guarantees about the order of delivery between a group of asynchronous processes.
 
-GIPC also provides a "registry" which all of the processes connect to at startup. This allows processes not on the same local network to learn about eachother, and make implementing Paxos simpler. Theoretically, after the initial learning of eachother, the processes shouldn't care if the registry dies. One caveat is that for a node to come back online after it dies, it must be able to connect to the registry *or* one surviving node to learn about the existance of the other nodes.
+GIPC also provides a "registry" which all of the processes connect to at startup. This allows processes not on the same local network to learn about each other, and makes implementing Paxos simpler. After the initial learning of each other, the processes doesn't care if the registry dies. One caveat is that for a node to come back online after it dies, it must be able to connect to the registry *or* one surviving node to learn about the existance of the other nodes.
 
 #### Leader Election
 
 To guarantee progress will be made in a distributed consensus algorithm, we need to avoid [livelock](https://en.wikipedia.org/wiki/Deadlock#Livelock). Paxos does this by "electing" a leader, and in fact Paxos itself can be used to elect a leader.
 
-My first implementation of Paxos is specifically targeted to solve the leader election problem.
+##### Simple Example (3 nodes, with 1 initially down)
 
-##### Leader Election Example (3 processes)
+Using my debugging library (which allows me to force error cases), I have processes A reject the first round of proposals it receives. [Note: The proposal number is encoded as "{node local proposal number}.{node globally unique id}"]
 
-Using my debugging library (which allows me to force error cases), I have processes 1 and 2 reject the first round of proposals they receive. The proposal number is encoded as "{client local proposal number}.{client globally unique id}"
-
-Process 1
 ```
-[Proposer] Sending proposal 0.001 # Round 0
-[Acceptor] Ignoring proposal 0.001 (needs 1.0)
-[Acceptor] Ignoring proposal 0.002 (needs 1.0)
-[Acceptor] Ignoring proposal 0.003 (needs 1.0)
-[Acceptor] Accepting proposal 1.002 # Round 1, vote for process 2
-[Proposer] Sending proposal 1.001
-[Acceptor] Ignoring proposal 1.001 (needs 1.002) # Round 1, reject process 1
-[Acceptor] Accepting proposal 1.003 # Round 1, change vote to process 3
-[Learner] Accepting new learn 1.002 (1/2) # Process 2 was elected, accept it's value
-[Learner] Accepting new learn 1.003 (1/2) # Process 3 was elected, replacing 2. Accept it
-[Learner] Accepting learn 1.003 (2/2)
-[Learner] Learner learned 2 # Received quorum accepting process 3's suggession 
-[Proposer] Sending proposal 2.001 # Process 1's proposer hasn't learned of accepted value
-[Acceptor] Accepting proposal 2.001
-[Proposer] Proposal accepted 2.001 (1/2)
-[Proposer] Proposal accepted 2.001 (2/2)
-[Proposer] Proposal accepted quorum for 2.001 with previous value 2 # Now process 1 knows accepted value
-[Proposer] Sending accept request 2.001 with value 2
-[Acceptor] Accepting accept request 2.001 with value 2
-[Learner] Accepting new learn 2.001 (1/2)
-[Learner] Accepting learn 2.001 (2/2)
-[Learner] Learner learned 2
+[A] [Learner] Forcing Largest Proposal Number 1.0
+[A] Setup as 9001
+[C] Setup as 9003
+[B] Setup as 9002
+[B] [Proposer] Sending proposal 0.9002 # B makes initial proposal
+[A] [Acceptor] Ignoring proposal 0.9002 (needs 1.0) # A is simulated as down
+[C] [Acceptor] Accepting proposal 0.9002
+[B] [Acceptor] Accepting proposal 0.9002
+[B] [Proposer] Proposal accepted 0.9002 (1/2)
+[B] [Proposer] Proposal accepted 0.9002 (2/2)
+[B] [Proposer] Proposal accepted quorum for 0.9002 with previous value null # B received quorum from B/C
+[B] [Proposer] Sending accept request 0.9002 with value 9002
+[B] [Acceptor] Accepting accept request 0.9002 with value 9002
+[C] [Acceptor] Accepting accept request 0.9002 with value 9002
+[A] [Learner] Accepting learn 0.9002 with value 9002 (1/2)
+[B] [Learner] Accepting learn 0.9002 with value 9002 (1/2)
+[B] [Learner] Accepting learn 0.9002 with value 9002 (2/2) # Learner receives quorum
+[B] [Learner] Learner learned 9002
+[C] [Learner] Accepting learn 0.9002 with value 9002 (1/2)
+[A] [Learner] Accepting learn 0.9002 with value 9002 (2/2)
+[A] [Learner] Learner learned 9002 # A learner is up to date, but A proposer doesn't know this yet
+[C] [Learner] Accepting learn 0.9002 with value 9002 (2/2)
+[C] [Learner] Learner learned 9002
+[A] [Proposer] Sending proposal 0.9001 # now A makes a proposal
+[A] [Acceptor] Ignoring proposal 0.9001 (needs 1.0)
+[B] [Acceptor] Ignoring proposal 0.9001 (needs 0.9002)
+[C] [Acceptor] Ignoring proposal 0.9001 (needs 0.9002)
+[A] [Proposer] Sending proposal 1.9001 # retry (needs to catchup sequence number)
+[B] [Acceptor] Accepting proposal 1.9001
+[A] [Acceptor] Accepting proposal 1.9001
+[C] [Acceptor] Accepting proposal 1.9001
+[A] [Proposer] Proposal accepted 1.9001 (1/2)
+[A] [Proposer] Proposal accepted 1.9001 (2/2)
+[A] [Proposer] Proposal accepted quorum for 1.9001 with previous value 9002 # Sequence number caught up, use previous value
+[A] [Proposer] Sending accept request 1.9001 with value 9002 # A proposer is now up to date
+[B] [Acceptor] Accepting accept request 1.9001 with value 9002
+[B] [Learner] Accepting learn 1.9001 with value 9002 (1/2)
+[A] [Learner] Accepting learn 1.9001 with value 9002 (1/2)
+[C] [Acceptor] Accepting accept request 1.9001 with value 9002
+[C] [Learner] Accepting learn 1.9001 with value 9002 (1/2)
+[C] [Learner] Accepting learn 1.9001 with value 9002 (2/2)
+[C] [Learner] Learner learned 9002
+[B] [Learner] Accepting learn 1.9001 with value 9002 (2/2)
+[B] [Learner] Learner learned 9002
+[A] [Learner] Accepting learn 1.9001 with value 9002 (2/2)
+[A] [Learner] Learner learned 9002
 ```
