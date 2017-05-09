@@ -8,14 +8,9 @@ public class PaxosServer extends LearnerImpl<Short> {
 
 	private short myID;
 	private List<?> servers;
+	private int countForMajority;
 	
 	private int nextProposalNumber;
-	
-	public PaxosServer() {
-		super();
-		
-		this.shouldRepropose = false;
-	}
 	
 	/**
 	 * Every server needs to be assigned a globally unique, final id at creation time
@@ -25,6 +20,12 @@ public class PaxosServer extends LearnerImpl<Short> {
 	public void setup(short id, List<PaxosServerDebuggable> servers) throws RemoteException {
 		this.myID = id;
 		this.servers = servers;
+		this.countForMajority = servers.size()/2 + 1;
+	}
+	
+	@Override
+	public int getCountForMajority() {
+		return countForMajority;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -41,7 +42,7 @@ public class PaxosServer extends LearnerImpl<Short> {
 	
 	@Override
 	public double getNextProposalNumber() {
-		double pn = nextProposalNumber + (myID / 1000.0);
+		double pn = nextProposalNumber + (myID / 10000.0);
 		nextProposalNumber += 1;
 
 		if (pn <= 0) throw new RuntimeException("Ran out of proposal numbers!");

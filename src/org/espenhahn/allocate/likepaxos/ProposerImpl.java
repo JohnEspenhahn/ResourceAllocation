@@ -8,8 +8,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.espenhahn.allocate.likepaxos.registry.PaxosRegistryImpl;
-
 public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemote<E> {
 	
 	// Timer
@@ -29,12 +27,10 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	private Proposal<E> maxPrevProposal;
 	
 	// Config
-	protected boolean shouldRepropose;
 	private AcceptListener<E> acceptListener;
 	private LearnListener<E> learnListener;
 	
 	public ProposerImpl() {
-		this.shouldRepropose = true;
 		this.accepted = new LinkedList<AcceptorRemote<E>>();
 	}
 	
@@ -43,11 +39,6 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		this.learnListener = learnListener;
 	}
 
-	@Override
-	public int getCountForMajority() {
-		return PaxosRegistryImpl.NUM_MAJORITY;
-	}
-	
 	@Override
 	public synchronized void sendPromiseRequest() {
 		cancelPromiseTimer();
