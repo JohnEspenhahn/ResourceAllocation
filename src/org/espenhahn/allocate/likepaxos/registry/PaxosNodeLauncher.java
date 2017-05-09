@@ -8,8 +8,6 @@ import java.util.Scanner;
 import org.espenhahn.allocate.likepaxos.PaxosServerDebuggable;
 import org.espenhahn.allocate.likepaxos.PaxosServerDebuggableImpl;
 
-import examples.mvc.local.duplex.ACounter;
-import examples.mvc.local.duplex.Counter;
 import inputport.rpc.DirectedRPCProxyGenerator;
 import inputport.rpc.duplex.AnAbstractDuplexRPCClientPortLauncher;
 import port.PortAccessKind;
@@ -20,9 +18,9 @@ import util.trace.Tracer;
 
 public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
-	private short clientId;
-	private PaxosServerDebuggable localPaxosInstance;
-	private List<PaxosServerDebuggable> allPaxosNodes;
+	protected short clientId;
+	protected PaxosServerDebuggableImpl localPaxosInstance;
+	protected List<PaxosServerDebuggable> allPaxosNodes;
 
 	public PaxosNodeLauncher(String clientName, short clientId, String serverHost, String serverId, String serverName) {
 		super(clientName, serverHost, serverId, serverName);
@@ -39,7 +37,7 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
 	@Override
 	protected void registerRemoteObjects() {
-		localPaxosInstance = new PaxosServerDebuggableImpl();
+		localPaxosInstance = new PaxosServerDebuggableImpl();		
 		register(localPaxosInstance);
 	}
 
@@ -78,7 +76,7 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws RemoteException {
 		if (args.length == 0)
 			throw new RuntimeException("Requires node name!");
 
@@ -101,11 +99,14 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
 		Scanner s = new Scanner(System.in);
 
-		while (s.hasNextLine()) {
+		while (s.hasNext()) {
 			String str = s.nextLine().trim();
 			if (str.equalsIgnoreCase("start")) {
 				launcher.start();
-				break;
+			} else if (str.equalsIgnoreCase("acceptorSetLargestProposalNumber")) {
+				launcher.localPaxosInstance.acceptorSetLargestProposalNumber(s.nextDouble());
+			} else if (str.equalsIgnoreCase("sendPromiseRequest")) {
+				launcher.localPaxosInstance.sendPromiseRequest();
 			} else {
 				launcher.connectDirectTo(str);
 			}

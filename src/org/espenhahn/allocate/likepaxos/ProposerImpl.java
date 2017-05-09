@@ -51,7 +51,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		
 		this.promiseTimer = executor.schedule(reproposeEvent, TIMEOUT_TIME, TimeUnit.SECONDS);
 		
-		System.err.println("[Proposer] Sending proposal " + waitingForProposalNumber);
+		System.out.println("[Proposer] Sending proposal " + waitingForProposalNumber);
 		for (AcceptorRemote<E> a: getAcceptors()) {
 			try {
 				a.promiseRequest(this, waitingForProposalNumber);

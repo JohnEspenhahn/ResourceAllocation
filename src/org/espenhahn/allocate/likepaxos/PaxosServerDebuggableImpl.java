@@ -17,13 +17,7 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 
 		System.out.println("Setup as " + id);
 
-		// Make minority fail on first request
-		for (int i = 0; i < this.getCountForMajority(); i++) {
-			PaxosServerDebuggable s = servers.get(i);
-			s.acceptorSetLargestProposalNumber(1);
-		}
-
-		this.sendPromiseRequest();
+//		this.sendPromiseRequest();
 	}
 
 }

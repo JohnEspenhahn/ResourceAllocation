@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.ProcessBuilder.Redirect;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -13,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DebugLauncher {
 	
+	static final int RUNTIME = 17;
 	static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
 	public static void main(String[] args) throws IOException, InterruptedException {
@@ -26,20 +26,26 @@ public class DebugLauncher {
 
 		Thread.sleep(2000);
 		
+		a.println("A");
 		a.println("B");
 		a.println("C");
+		
+		a.print("acceptorSetLargestProposalNumber\n1.0 ");
+		
 		a.flush();
 
 		b.println("A");
+		b.println("B");
 		b.println("C");
 		b.flush();
 		
 		c.println("A");
 		c.println("B");
+		c.println("C");
 		c.flush();
 		
 		// No longer need launcher (all directly connected)
-		Thread.sleep(1000);
+		Thread.sleep(2000);
 		launcher.destroyForcibly();
 		
 		a.println("start");
@@ -48,6 +54,13 @@ public class DebugLauncher {
 		a.flush();
 		b.flush();
 		c.flush();
+		
+		b.println("sendPromiseRequest");
+		b.flush();
+		
+		Thread.sleep(5000);
+		a.println("sendPromiseRequest");
+		a.flush();
 	}
 	
 	public static PrintWriter execWriter(Class clazz, String... args) throws IOException, InterruptedException {
@@ -100,7 +113,7 @@ public class DebugLauncher {
 		
 		executor.schedule(() -> {
 			process.destroy();
-		}, 10, TimeUnit.SECONDS);
+		}, RUNTIME, TimeUnit.SECONDS);
 			
 		return process;
 	}

@@ -15,7 +15,7 @@ public abstract class AcceptorImpl<E> extends ProposerImpl<E> implements Accepto
 			largestProposalNumber = proposalNumber;
 			proposer.acceptProposal(this, proposalNumber, largestPreviousProposal);
 		} else {
-			System.err.println("[Acceptor] Ignoring proposal " + proposalNumber + " (needs " + largestProposalNumber + ")");
+			System.out.println("[Acceptor] Ignoring proposal " + proposalNumber + " (needs " + largestProposalNumber + ")");
 			
 //			proposer.rejectProposal(proposalNumber, largestPreviousProposal);
 		}
@@ -33,7 +33,7 @@ public abstract class AcceptorImpl<E> extends ProposerImpl<E> implements Accepto
 				l.learnerLearnRequest(proposal);
 			}
 		} else {
-			System.err.println("[Acceptor] Ignoring accept request " + proposal.getProposalNumber() + " with value " + proposal.getValue());
+			System.out.println("[Acceptor] Ignoring accept request " + proposal.getProposalNumber() + " with value " + proposal.getValue());
 			
 //			proposer.rejectAcceptRequest(largestProposalNumber, largestPreviousProposal);
 		}
