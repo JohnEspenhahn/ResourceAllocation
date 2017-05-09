@@ -5,7 +5,7 @@ Various resource allocation schemes
 
 [Distributed Allocation (Paxos-Like)](#likepaxos)
 
-## compilerlike
+# compilerlike
 
 Convert an arbitrary set of "virtual" resources into a close to minimal set of "real" resources required to execute a series of tuple instructions (like how registers are allocated in a compiler). See "UsageExample" in the corresponding package for an example.
 
@@ -79,12 +79,50 @@ r2 = z
 ```
 So our code has been simplified from 7 virtual resources, to 3 real ones
 
-## likepaxos
+# likepaxos
 
 Paxos is a protocol for solving consensus problems in a network of unreliable processors. In Paxos there are three types of processes, Proposer/Acceptor/Learner. I have created interfaces for each of these, but in my implemention I treat each process as a "server" which is all three.
+
+#### IPC Mechanism
+
+To simplify the problem, for my IPC mechanism I will be using GIPC. [GIPC](https://github.com/pdewan/GIPC) is an experimental remote procedure call library developed by Dr. Prasun Dewan at the University of North Carolina at Chapel Hill. It similar to Java's RMI, but it is non-blocking (meaning it does *not* block local execution until the remote procedures to completes).
+
+In traditional Paxos we assume an unreliable network, but GIPC is implemented on top of reliable TCP sockets. This means the problem is similfied, as messages between two processes are guaranteed to not be lost in the network, and are guaranteed to be delivered in order. This means my implementation of Paxos will be slow, but it will still have most of the interesting problems Paxos solves. For example, even though TPC provides a reliable abstraction of the network, the end nodes themselves can still die and introduce interesting consistency problems. Also, in order delivery between two nodes provides no guarantees about the order of delivery between a group of asynchronous processes.
+
+GIPC also provides a "registry" which all of the processes connect to at startup. This allows processes not on the same local network to learn about eachother, and make implementing Paxos simpler. Theoretically, after the initial learning of eachother, the processes shouldn't care if the registry dies. One caveat is that for a node to come back online after it dies, it must be able to connect to the registry *or* one surviving node to learn about the existance of the other nodes.
 
 #### Leader Election
 
 To guarantee progress will be made in a distributed consensus algorithm, we need to avoid [livelock](https://en.wikipedia.org/wiki/Deadlock#Livelock). Paxos does this by "electing" a leader, and in fact Paxos itself can be used to elect a leader.
 
-My first implementation of Paxos is specifically targeted to solve the leader election problem. I will then expand it to allow distributed resource allocation. 
+My first implementation of Paxos is specifically targeted to solve the leader election problem.
+
+##### Leader Election Example (3 processes)
+
+Using my debugging library (which allows me to force error cases), I have processes 1 and 2 reject the first round of proposals they receive. The proposal number is encoded as "{client local proposal number}.{client globally unique id}"
+
+Process 1
+```
+[Proposer] Sending proposal 0.001 # Round 0
+[Acceptor] Ignoring proposal 0.001 (needs 1.0)
+[Acceptor] Ignoring proposal 0.002 (needs 1.0)
+[Acceptor] Ignoring proposal 0.003 (needs 1.0)
+[Acceptor] Accepting proposal 1.002 # Round 1, vote for process 2
+[Proposer] Sending proposal 1.001
+[Acceptor] Ignoring proposal 1.001 (needs 1.002) # Round 1, reject process 1
+[Acceptor] Accepting proposal 1.003 # Round 1, change vote to process 3
+[Learner] Accepting new learn 1.002 (1/2) # Process 2 was elected, accept it's value
+[Learner] Accepting new learn 1.003 (1/2) # Process 3 was elected, replacing 2. Accept it
+[Learner] Accepting learn 1.003 (2/2)
+[Learner] Learner learned 2 # Received quorum accepting process 3's suggession 
+[Proposer] Sending proposal 2.001 # Process 1's proposer hasn't learned of accepted value
+[Acceptor] Accepting proposal 2.001
+[Proposer] Proposal accepted 2.001 (1/2)
+[Proposer] Proposal accepted 2.001 (2/2)
+[Proposer] Proposal accepted quorum for 2.001 with previous value 2 # Now process 1 knows accepted value
+[Proposer] Sending accept request 2.001 with value 2
+[Acceptor] Accepting accept request 2.001 with value 2
+[Learner] Accepting new learn 2.001 (1/2)
+[Learner] Accepting learn 2.001 (2/2)
+[Learner] Learner learned 2
+```
