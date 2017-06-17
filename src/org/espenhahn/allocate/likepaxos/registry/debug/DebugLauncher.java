@@ -1,4 +1,4 @@
-package org.espenhahn.allocate.likepaxos.registry;
+package org.espenhahn.allocate.likepaxos.registry.debug;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,12 +10,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.espenhahn.allocate.likepaxos.registry.PaxosNodeLauncher;
+import org.espenhahn.allocate.likepaxos.registry.PaxosSessionServerLauncher;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.DebugController;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.DebugRenderer;
+
 public class DebugLauncher {
 	
 	static final int RUNTIME = 17;
 	static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-
+	private static DebugController controller;
+	
 	public static void main(String[] args) throws IOException, InterruptedException {
+		DebugRenderer renderer = new DebugRenderer();
+		DebugLauncher.controller = new DebugController(renderer);
+		
 		Process launcher = exec(PaxosSessionServerLauncher.class);
 
 		Thread.sleep(700);
@@ -61,6 +70,9 @@ public class DebugLauncher {
 		Thread.sleep(5000);
 		a.println("sendPromiseRequest");
 		a.flush();
+		
+		// Start
+		renderer.show();
 	}
 	
 	public static PrintWriter execWriter(Class clazz, String... args) throws IOException, InterruptedException {
@@ -81,7 +93,6 @@ public class DebugLauncher {
 		System.arraycopy(args, 0, all_args, 4, args.length);
 
 		ProcessBuilder builder = new ProcessBuilder(all_args);
-//		builder.redirectOutput(Redirect.INHERIT);
 
 		Process process = builder.start();
 		
@@ -94,7 +105,12 @@ public class DebugLauncher {
 	            InputStreamReader reader = new InputStreamReader(inStream);
 	            Scanner scan = new Scanner(reader);
 	            while (scan.hasNextLine()) {
-	               System.out.println("[" + name + "] " + scan.nextLine());
+	            	String stdin_line = scan.nextLine();
+	            	
+	            	// Update MVC
+	            	controller.appendCommand(name, stdin_line);
+	            	
+	               System.out.println("[" + name + "] " + stdin_line);
 	            }
 	            scan.close();
 		      }).start();
@@ -112,6 +128,7 @@ public class DebugLauncher {
 		}
 		
 		executor.schedule(() -> {
+			System.err.println("*** SAFE TO KILL ME ***");
 			process.destroy();
 		}, RUNTIME, TimeUnit.SECONDS);
 			

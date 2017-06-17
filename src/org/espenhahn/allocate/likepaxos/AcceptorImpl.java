@@ -10,7 +10,7 @@ public abstract class AcceptorImpl<E> extends ProposerImpl<E> implements Accepto
 	@Override
 	public void promiseRequest(ProposerRemote<E> proposer, double proposalNumber) throws RemoteException {
 		if (proposalNumber > largestProposalNumber) {
-			System.out.println("[Acceptor] Accepting proposal " + proposalNumber);
+			System.out.printf("accept:%f\n", proposalNumber);
 			
 			largestProposalNumber = proposalNumber;
 			proposer.acceptProposal(this, proposalNumber, largestPreviousProposal);

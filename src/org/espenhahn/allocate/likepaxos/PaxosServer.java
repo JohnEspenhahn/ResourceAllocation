@@ -1,10 +1,11 @@
 package org.espenhahn.allocate.likepaxos;
 
-import java.rmi.Remote;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.List;
 
 public class PaxosServer extends LearnerImpl<Short> {
+	private static final BigDecimal TEN_K = new BigDecimal(10000.0);
 
 	private short myID;
 	private List<?> servers;
@@ -42,7 +43,8 @@ public class PaxosServer extends LearnerImpl<Short> {
 	
 	@Override
 	public double getNextProposalNumber() {
-		double pn = nextProposalNumber + (myID / 10000.0);
+		// Get precise double
+		double pn = new BigDecimal(nextProposalNumber).multiply(TEN_K).add(BigDecimal.ONE).divide(TEN_K, 5, BigDecimal.ROUND_HALF_DOWN).doubleValue();
 		nextProposalNumber += 1;
 
 		if (pn <= 0) throw new RuntimeException("Ran out of proposal numbers!");

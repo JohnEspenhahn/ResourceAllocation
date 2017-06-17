@@ -28,6 +28,8 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
 		this.clientId = clientId;
 		this.allPaxosNodes = new ArrayList<PaxosServerDebuggable>();
+		
+		System.out.printf("register:%d\n", clientId);
 	}
 
 	@Override
@@ -63,7 +65,7 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 		this.register(name, proxy);
 		allPaxosNodes.add(proxy);
 
-		System.out.println("Connected to " + name);
+		System.out.printf("connect:%s\n", name);
 
 		return proxy;
 	}
