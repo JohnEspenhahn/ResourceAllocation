@@ -7,7 +7,7 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 
 	// TODO make blocking, but doesn't work when [Client 1 Proxy -> Server Proxy -> Client 2 Local Impl]
 	public void acceptorSetLargestProposalNumber(double proposalNumber) {
-		System.out.println("[Learner] Forcing Largest Proposal Number " + proposalNumber);
+		System.out.printf("accept:%f:[Acceptor] Forcing Largest Proposal Number\n", proposalNumber);
 		
 		largestProposalNumber = proposalNumber;
 	}

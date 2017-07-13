@@ -11,7 +11,7 @@ public class PaxosNodeModel {
 		this.id = id;
 	}
 	
-	public void setLargestProposalNumber(double pn) {
+	public void setAcceptedProposalNumber(double pn) {
 		this.circle.setLabel("" + pn);
 	}
 	

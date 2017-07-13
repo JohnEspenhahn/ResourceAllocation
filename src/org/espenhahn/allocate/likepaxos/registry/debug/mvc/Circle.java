@@ -1,5 +1,6 @@
 package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 
 public class Circle {
@@ -51,7 +52,13 @@ public class Circle {
 		g.drawOval(x-radius, y-radius, radius*2, radius*2);
 		
 		if (label != null && label.length() > 0) {
-			g.drawString(label, x-33, y);
+			Color old_color = g.getColor();
+			g.setColor(Color.GREEN);
+			
+			int width = g.getFontMetrics().stringWidth(label);
+			g.drawString(label, x-width/2, y);
+			
+			g.setColor(old_color);
 		}
 	}
 	

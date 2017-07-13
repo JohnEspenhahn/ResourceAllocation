@@ -11,9 +11,9 @@ import java.awt.GridLayout;
 import java.awt.Panel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.SwingUtilities;
 
@@ -59,7 +59,11 @@ public class DebugRenderer {
 		SwingUtilities.invokeLater(() -> canvas.repaint());
 	}
 	
-	public void addLineBetween(Circle c1, Circle c2) {
+	public Drawable addLineBetween(Circle c1, Circle c2) {
+		return addLineBetween(c1, c2, null);
+	}
+	
+	public Drawable addLineBetween(Circle c1, Circle c2, Consumer<Line> callback) {
 		int dx = c2.getX() - c1.getX() + (int) (Math.random()*6-3);
 		int dy = c2.getY() - c1.getY() + (int) (Math.random()*6-3);
 		
@@ -78,7 +82,16 @@ public class DebugRenderer {
 					e.printStackTrace();
 				}
 			}
+			
+			if (callback != null) 
+				callback.accept(l);
 		}).start();
+		
+		return l;
+	}
+	
+	public boolean removeShape(Drawable object) {
+		return this.objects.remove(object);
 	}
 
 	private void prepareGUI() {

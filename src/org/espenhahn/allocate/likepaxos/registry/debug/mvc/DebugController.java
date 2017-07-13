@@ -75,12 +75,12 @@ public class DebugController {
 		PaxosNodeModel m1 = nodes.get(src);
 		PaxosNodeModel m2 = nodes.get(dest);
 		
-		renderer.addLineBetween(m1.getCircle(), m2.getCircle());
+		renderer.addLineBetween(m1.getCircle(), m2.getCircle(), l -> renderer.removeShape(l));
 	}
 	
 	private void accept(String src, double proposalNumber) {
 		PaxosNodeModel m1 = nodes.get(src);
-		renderer.invoke(() -> m1.setLargestProposalNumber(proposalNumber));
+		renderer.invoke(() -> m1.setAcceptedProposalNumber(proposalNumber));
 		
 	}
 }
