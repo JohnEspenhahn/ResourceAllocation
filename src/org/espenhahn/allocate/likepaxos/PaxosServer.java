@@ -3,12 +3,14 @@ package org.espenhahn.allocate.likepaxos;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class PaxosServer extends LearnerImpl<Short> {
 	private static final BigDecimal TEN_K = new BigDecimal(10000.0);
 
 	private short myID;
-	private List<?> servers;
+	private Map<?,String> servers;
 	private int countForMajority;
 	
 	private int nextProposalNumber;
@@ -18,7 +20,7 @@ public class PaxosServer extends LearnerImpl<Short> {
 	 * @param id
 	 * @param servers
 	 */
-	public void setup(short id, List<PaxosServerDebuggable> servers) throws RemoteException {
+	public void setup(short id, Map<PaxosServerDebuggable,String> servers) throws RemoteException {
 		this.myID = id;
 		this.servers = servers;
 		this.countForMajority = servers.size()/2 + 1;
@@ -31,14 +33,19 @@ public class PaxosServer extends LearnerImpl<Short> {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<LearnerRemote<Short>> getLearners() {
-		return (List<LearnerRemote<Short>>) servers;
+	public Set<LearnerRemote<Short>> getLearners() {
+		return (Set<LearnerRemote<Short>>) servers.keySet();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<AcceptorRemote<Short>> getAcceptors() {
-		return (List<AcceptorRemote<Short>>) servers;
+	public Set<AcceptorRemote<Short>> getAcceptors() {
+		return (Set<AcceptorRemote<Short>>) servers.keySet();
+	}
+	
+	@Override
+	public String getAcceptorName(AcceptorRemote<Short> acceptor) {
+		return servers.get(acceptor);
 	}
 	
 	@Override
@@ -56,8 +63,6 @@ public class PaxosServer extends LearnerImpl<Short> {
 	public void resendPromiseRequest(double proposalNumber) {
 		// Force proposal number above
 		nextProposalNumber = (int) Math.max(nextProposalNumber, Math.floor(proposalNumber));
-		
-		// send the promise request
 		sendPromiseRequest();
 	}
 	

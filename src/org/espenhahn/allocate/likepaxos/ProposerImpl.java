@@ -17,6 +17,8 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 	
 	/** Timeout for waiting for promise responses from acceptors */
 	private ScheduledFuture<?> promiseTimer;
+	
+	/** The minimum proposal number we are waiting to accept */
 	private double waitingForProposalNumber = -1;
 	
 	/** Acceptors that have accepted the last proposal */
@@ -51,18 +53,14 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		
 		this.promiseTimer = executor.schedule(reproposeEvent, TIMEOUT_TIME, TimeUnit.SECONDS);
 		
-		System.out.println("[Proposer] Sending proposal " + waitingForProposalNumber);
 		for (AcceptorRemote<E> a: getAcceptors()) {
 			try {
+				System.out.printf("propose:%f:%f:[Proposer] Sending proposal\n", waitingForProposalNumber, getAcceptorName(a));
 				a.promiseRequest(this, waitingForProposalNumber);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	protected double getWaitingForProposalNumber() {
-		return waitingForProposalNumber;
 	}
 	
 	private void cancelPromiseTimer() {

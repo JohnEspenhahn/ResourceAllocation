@@ -11,18 +11,23 @@ import java.awt.GridLayout;
 import java.awt.Panel;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.SwingUtilities;
+
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.Animation;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.GrowLineAnimation;
 
 public class DebugRenderer {
 
 	private Frame mainFrame;
 	public Button backButton, nextButton;
 	
-	private Canvas canvas;
+	private AnimatedCanvas canvas;
 	private Panel controlPanel;
 	
 	private List<Circle> ring;
@@ -64,30 +69,21 @@ public class DebugRenderer {
 	}
 	
 	public Drawable addLineBetween(Circle c1, Circle c2, Consumer<Line> callback) {
-		int dx = c2.getX() - c1.getX() + (int) (Math.random()*6-3);
-		int dy = c2.getY() - c1.getY() + (int) (Math.random()*6-3);
-		
 		Line l = new Line(c1.getX(), c1.getY(), c1.getX(), c1.getY());
 		objects.add(l);
 		
-		// Async grow
-		new Thread(() -> {
-			for (double d = 0.1; d < 1; d += 0.1) {
-				try {
-					l.setEnd((int) (c1.getX() + dx*d), (int) (c1.getY() + dy*d));
-					SwingUtilities.invokeAndWait(() -> canvas.repaint());
-					
-					Thread.sleep(200);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			
-			if (callback != null) 
-				callback.accept(l);
-		}).start();
+		canvas.addAnimation(new GrowLineAnimation(l, c2.getX(), c2.getY(), callback));
 		
 		return l;
+	}
+	
+	public Drawable addTextBetween(String lbl, Drawable d1, Drawable d2, Consumer<Text> callback) {
+		Text t = new Text(lbl, d1.getX(), d1.getY());
+		objects.add(t);
+		
+		canvas.addAnimation(new MoveDrawableAnimation(t, d2.getX(), d2.getY(), callback));
+		
+		return t;
 	}
 	
 	public boolean removeShape(Drawable object) {
@@ -121,22 +117,40 @@ public class DebugRenderer {
 	}
 
 	public void show() {
-		canvas = new MyCanvas();
+		canvas = new AnimatedCanvas();
 		controlPanel.add(canvas);
 		
 		mainFrame.pack();
 		mainFrame.setVisible(true);
 	}
 
-	class MyCanvas extends Canvas {
+	class AnimatedCanvas extends Canvas {
 		private static final long serialVersionUID = 7392411307006281114L;
+		private Deque<Animation> animations;
 
-		public MyCanvas() {
+		public AnimatedCanvas() {
+			this.animations = new ArrayDeque<Animation>();
+			
 			setBackground(Color.gray);
 			setSize(650, 650);
 		}
+		
+		public void addAnimation(Animation a) {
+			synchronized (animations) {
+				animations.addLast(a);
+			}
+		}
 
 		public void paint(Graphics g) {
+			synchronized (animations) {
+				int size = animations.size();
+				for (int i = 0; i < size; i++) {
+					Animation a = animations.removeFirst();
+					boolean done = a.animate();
+					if (!done) animations.addLast(a); 
+				}
+			}
+			
 			Graphics2D g2;
 			g2 = (Graphics2D) g;
 			g2.clearRect(0, 0, getWidth(), getHeight());

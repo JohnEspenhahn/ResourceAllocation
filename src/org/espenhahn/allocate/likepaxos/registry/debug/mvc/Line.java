@@ -20,9 +20,22 @@ public class Line implements Drawable {
 		this.options = options;
 	}
 	
+	public void setPos(int x1, int y1) {
+		this.x1 = x1;
+		this.y1 = y1;
+	}
+	
 	public void setEnd(int x2, int y2) {
 		this.x2 = x2;
 		this.y2 = y2;
+	}
+	
+	public int getX() {
+		return x1;
+	}
+	
+	public int getY() {
+		return y1;
 	}
 	
 	@Override

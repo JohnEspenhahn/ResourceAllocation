@@ -29,28 +29,28 @@ public class DebugLauncher {
 
 		Thread.sleep(700);
 		
-		PrintWriter a = execWriter(PaxosNodeLauncher.class, "A", "9001", "localhost"),
-					b = execWriter(PaxosNodeLauncher.class, "B", "9002", "localhost"),
-					c = execWriter(PaxosNodeLauncher.class, "C", "9003", "localhost");
+		PrintWriter a = execWriter(PaxosNodeLauncher.class, "9001", "localhost"),
+					b = execWriter(PaxosNodeLauncher.class, "9002", "localhost"),
+					c = execWriter(PaxosNodeLauncher.class, "9003", "localhost");
 
 		Thread.sleep(2000);
 		
-		a.println("A");
-		a.println("B");
-		a.println("C");
+		a.println("9001");
+		a.println("9002");
+		a.println("9003");
 		
 		a.print("acceptorSetLargestProposalNumber\n1.0 ");
 		
 		a.flush();
 
-		b.println("A");
-		b.println("B");
-		b.println("C");
+		b.println("9001");
+		b.println("9002");
+		b.println("9003");
 		b.flush();
 		
-		c.println("A");
-		c.println("B");
-		c.println("C");
+		c.println("9001");
+		c.println("9002");
+		c.println("9003");
 		c.flush();
 		
 		// No longer need launcher (all directly connected)

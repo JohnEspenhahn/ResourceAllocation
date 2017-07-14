@@ -1,9 +1,9 @@
 package org.espenhahn.allocate.likepaxos;
 
-import java.util.List;
+import java.util.Set;
 
 public interface AcceptorLocal<E> {
 	
-	List<LearnerRemote<E>> getLearners();
+	Set<LearnerRemote<E>> getLearners();
 
 }

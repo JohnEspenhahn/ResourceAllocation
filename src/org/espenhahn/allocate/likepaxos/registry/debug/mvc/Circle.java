@@ -8,7 +8,7 @@ public class Circle {
 	private int x;
 	private int y;
 	private int radius;
-	private String label;
+	private Text label;
 	
 	public Circle(int x, int y, int radius) {
 		this.x = x;
@@ -27,11 +27,13 @@ public class Circle {
 	public void setPos(int x, int y) {
 		this.x = x;
 		this.y = y;
+		
+		if (this.label != null)
+			this.label.setPos(x, y);
 	}
 	
 	public void translate(int dx, int dy) {
-		this.x += dx;
-		this.y += dy;
+		setPos(this.x + dx, this.y + dy);
 	}
 	
 	public void rotateAbout(int centerX, int centerY, double degrees) {
@@ -45,21 +47,13 @@ public class Circle {
 	}
 	
 	public void setLabel(String lbl) {
-		this.label = lbl;
+		this.label = new Text(lbl, x, y);
 	}
 	
 	public void render(Graphics2D g) {
 		g.drawOval(x-radius, y-radius, radius*2, radius*2);
 		
-		if (label != null && label.length() > 0) {
-			Color old_color = g.getColor();
-			g.setColor(Color.GREEN);
-			
-			int width = g.getFontMetrics().stringWidth(label);
-			g.drawString(label, x-width/2, y);
-			
-			g.setColor(old_color);
-		}
+		if (label != null) label.render(g);
 	}
 	
 }

@@ -1,10 +1,13 @@
 package org.espenhahn.allocate.likepaxos;
 
-import java.util.List;
+import java.util.Set;
 
 public interface ProposerLocal<E> extends PaxosObject {
 	
-	List<AcceptorRemote<E>> getAcceptors();
+	Set<AcceptorRemote<E>> getAcceptors();
+	
+	/** Lookup the name of a remote acceptor */
+	String getAcceptorName(AcceptorRemote<E> acceptor);
 	
 	/**
 	 * Get the next, globally unique, proposal number for this proposer

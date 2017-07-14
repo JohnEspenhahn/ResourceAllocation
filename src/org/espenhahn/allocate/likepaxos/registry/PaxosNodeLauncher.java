@@ -2,7 +2,8 @@ package org.espenhahn.allocate.likepaxos.registry;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.espenhahn.allocate.likepaxos.PaxosServerDebuggable;
@@ -20,14 +21,16 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
 	protected short clientId;
 	protected PaxosServerDebuggableImpl localPaxosInstance;
-	protected List<PaxosServerDebuggable> allPaxosNodes;
+	
+	/** Map<Server,Port> */
+	protected Map<PaxosServerDebuggable,String> allPaxosNodes;
 
 	public PaxosNodeLauncher(String clientName, short clientId, String serverHost, String serverId, String serverName) {
 		super(clientName, serverHost, serverId, serverName);
 		DirectedRPCProxyGenerator.setDoShortCircuitLocalCallsToRemotes(false);
 
 		this.clientId = clientId;
-		this.allPaxosNodes = new ArrayList<PaxosServerDebuggable>();
+		this.allPaxosNodes = new HashMap<PaxosServerDebuggable, String>();
 		
 		System.out.printf("register:%d\n", clientId);
 	}
@@ -63,7 +66,7 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 				.generateRPCProxy((DuplexRPCSessionPort) mainPort, name, PaxosServerDebuggable.class, null);
 		
 		this.register(name, proxy);
-		allPaxosNodes.add(proxy);
+		allPaxosNodes.put(proxy, name);
 
 		System.out.printf("connect:%s\n", name);
 
@@ -80,21 +83,18 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
 	public static void main(String[] args) throws RemoteException {
 		if (args.length == 0)
-			throw new RuntimeException("Requires node name!");
+			throw new RuntimeException("Requires node port!");
 
 		Tracer.showWarnings(false);
 		Tracer.showInfo(false);
 
-		String name = args[0];
-		short port = (short) (9000 + (name.hashCode() % 56000));
-		if (args.length > 1)
-			port = Short.parseShort(args[1]);
+		short port = Short.parseShort(args[0]);
 
 		String address = "localhost";
 		if (args.length > 2)
 			address = args[2];
 
-		PaxosNodeLauncher launcher = (new PaxosNodeLauncher(name, port, address, PaxosSessionServerLauncher.SERVER_ID,
+		PaxosNodeLauncher launcher = (new PaxosNodeLauncher("" + port, port, address, PaxosSessionServerLauncher.SERVER_ID,
 				PaxosSessionServerLauncher.SERVER_NAME));
 
 		launcher.launch();

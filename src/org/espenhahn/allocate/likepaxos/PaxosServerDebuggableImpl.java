@@ -1,7 +1,7 @@
 package org.espenhahn.allocate.likepaxos;
 
 import java.rmi.RemoteException;
-import java.util.List;
+import java.util.Map;
 
 public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServerDebuggable {
 
@@ -12,7 +12,8 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 		largestProposalNumber = proposalNumber;
 	}
 
-	public void setup(short id, List<PaxosServerDebuggable> servers) throws RemoteException {
+	@Override
+	public void setup(short id, Map<PaxosServerDebuggable,String> servers) throws RemoteException {
 		super.setup(id, servers);
 
 		System.out.println("Setup as " + id);
