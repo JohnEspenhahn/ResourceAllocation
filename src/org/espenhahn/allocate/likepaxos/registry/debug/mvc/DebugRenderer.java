@@ -15,12 +15,15 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Consumer;
 
 import javax.swing.SwingUtilities;
 
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.Animation;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.GrowLineAnimation;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.TranslateTextAnimation;
 
 public class DebugRenderer {
 
@@ -32,10 +35,14 @@ public class DebugRenderer {
 	
 	private List<Circle> ring;
 	private List<Drawable> objects;
+	
+	
+	private Deque<Animation> animations;
 
 	public DebugRenderer() {
 		this.ring = new ArrayList<Circle>();
 		this.objects = new ArrayList<Drawable>();
+		this.animations = new ArrayDeque<Animation>();
 		
 		prepareGUI();
 	}
@@ -72,7 +79,7 @@ public class DebugRenderer {
 		Line l = new Line(c1.getX(), c1.getY(), c1.getX(), c1.getY());
 		objects.add(l);
 		
-		canvas.addAnimation(new GrowLineAnimation(l, c2.getX(), c2.getY(), callback));
+		addAnimation(new GrowLineAnimation(l, c2.getX(), c2.getY(), callback));
 		
 		return l;
 	}
@@ -81,7 +88,7 @@ public class DebugRenderer {
 		Text t = new Text(lbl, d1.getX(), d1.getY());
 		objects.add(t);
 		
-		canvas.addAnimation(new MoveDrawableAnimation(t, d2.getX(), d2.getY(), callback));
+		addAnimation(new TranslateTextAnimation(t, d2.getX(), d2.getY(), callback));
 		
 		return t;
 	}
@@ -122,35 +129,40 @@ public class DebugRenderer {
 		
 		mainFrame.pack();
 		mainFrame.setVisible(true);
+		
+		// Thread to run animations
+		new Timer().schedule(new TimerTask() {
+			public void run() {
+				synchronized (animations) {
+					int size = animations.size();
+					for (int i = 0; i < size; i++) {
+						Animation a = animations.removeFirst();
+						boolean done = a.animate();
+						if (!done) animations.addLast(a); 
+					}
+				}
+				
+				// Async repaint
+				SwingUtilities.invokeLater(() -> canvas.repaint());
+			}
+		}, 200, 200);
+	}
+	
+	public void addAnimation(Animation a) {
+		synchronized (animations) {
+			animations.addLast(a);
+		}
 	}
 
 	class AnimatedCanvas extends Canvas {
 		private static final long serialVersionUID = 7392411307006281114L;
-		private Deque<Animation> animations;
 
 		public AnimatedCanvas() {
-			this.animations = new ArrayDeque<Animation>();
-			
 			setBackground(Color.gray);
 			setSize(650, 650);
 		}
-		
-		public void addAnimation(Animation a) {
-			synchronized (animations) {
-				animations.addLast(a);
-			}
-		}
 
 		public void paint(Graphics g) {
-			synchronized (animations) {
-				int size = animations.size();
-				for (int i = 0; i < size; i++) {
-					Animation a = animations.removeFirst();
-					boolean done = a.animate();
-					if (!done) animations.addLast(a); 
-				}
-			}
-			
 			Graphics2D g2;
 			g2 = (Graphics2D) g;
 			g2.clearRect(0, 0, getWidth(), getHeight());

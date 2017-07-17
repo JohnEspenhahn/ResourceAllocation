@@ -5,5 +5,7 @@ import java.util.Set;
 public interface AcceptorLocal<E> {
 	
 	Set<LearnerRemote<E>> getLearners();
+	
+	String getProposerName(ProposerRemote<E> proposer);
 
 }

@@ -1,9 +1,8 @@
 package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 
-public class Circle {
+public class Circle implements Drawable {
 	
 	private int x;
 	private int y;
@@ -16,14 +15,17 @@ public class Circle {
 		this.radius = radius;
 	}
 	
+	@Override
 	public int getX() {
 		return x;
 	}
 	
+	@Override
 	public int getY() {
 		return y;
 	}
 	
+	@Override
 	public void setPos(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -50,6 +52,7 @@ public class Circle {
 		this.label = new Text(lbl, x, y);
 	}
 	
+	@Override
 	public void render(Graphics2D g) {
 		g.drawOval(x-radius, y-radius, radius*2, radius*2);
 		

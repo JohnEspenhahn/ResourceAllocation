@@ -57,6 +57,8 @@ public class DebugController {
 			connect(src, cmds[2]);
 		else if (cmd.equals("accept"))
 			accept(src, Double.parseDouble(cmds[2]));
+		else if (cmd.equals("propose"))
+			propose(src, Double.parseDouble(cmds[2]), cmds[3]);
 		
 		return true;
 	}
@@ -65,7 +67,7 @@ public class DebugController {
 		PaxosNodeModel node = new PaxosNodeModel(clientName, clientID);
 		
 		Circle c = new Circle(0,0,20);
-		node.setCircle(c);
+		node.setCircle(c); 
 		renderer.addCircleToRing(c);
 		
 		nodes.put(clientName, node);
@@ -75,12 +77,18 @@ public class DebugController {
 		PaxosNodeModel m1 = nodes.get(src);
 		PaxosNodeModel m2 = nodes.get(dest);
 		
-		renderer.addLineBetween(m1.getCircle(), m2.getCircle(), l -> renderer.removeShape(l));
+		renderer.addLineBetween(m1.getCircle(), m2.getCircle(), (l) -> renderer.removeShape(l));
+	}
+	
+	private void propose(String src, double proposalNumber, String dest) {
+		PaxosNodeModel m1 = nodes.get(src);
+		PaxosNodeModel m2 = nodes.get(dest);
+		
+		renderer.addTextBetween("" + proposalNumber, m1.getCircle(), m2.getCircle(), (t) -> renderer.removeShape(t));
 	}
 	
 	private void accept(String src, double proposalNumber) {
 		PaxosNodeModel m1 = nodes.get(src);
 		renderer.invoke(() -> m1.setAcceptedProposalNumber(proposalNumber));
-		
 	}
 }

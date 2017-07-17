@@ -2,7 +2,6 @@ package org.espenhahn.allocate.likepaxos;
 
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,6 +45,11 @@ public class PaxosServer extends LearnerImpl<Short> {
 	@Override
 	public String getAcceptorName(AcceptorRemote<Short> acceptor) {
 		return servers.get(acceptor);
+	}
+	
+	@Override
+	public String getProposerName(ProposerRemote<Short> proposer) {
+		return servers.get(proposer);
 	}
 	
 	@Override

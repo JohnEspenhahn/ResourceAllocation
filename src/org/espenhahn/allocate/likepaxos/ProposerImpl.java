@@ -55,7 +55,7 @@ public abstract class ProposerImpl<E> implements ProposerLocal<E>, ProposerRemot
 		
 		for (AcceptorRemote<E> a: getAcceptors()) {
 			try {
-				System.out.printf("propose:%f:%f:[Proposer] Sending proposal\n", waitingForProposalNumber, getAcceptorName(a));
+				System.out.printf("propose:%f:%s\n", waitingForProposalNumber, getAcceptorName(a));
 				a.promiseRequest(this, waitingForProposalNumber);
 			} catch (RemoteException e) {
 				e.printStackTrace();
