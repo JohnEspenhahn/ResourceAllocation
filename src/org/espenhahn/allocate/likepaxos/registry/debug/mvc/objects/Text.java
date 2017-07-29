@@ -1,8 +1,8 @@
-package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
+package org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects;
 
 import java.awt.Graphics2D;
 
-public class Text implements Drawable {
+public class Text extends Drawable {
 	
 	private String lbl;
 	private int x, y;
@@ -20,16 +20,16 @@ public class Text implements Drawable {
 		this.options = options;
 	}
 	
-	public void setPos(int x, int y) {
+	public void setRelativePos(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
 	
-	public int getX() {
+	public int getRelativeX() {
 		return x;
 	}
 	
-	public int getY() {
+	public int getRelativeY() {
 		return y;
 	}
 
@@ -44,7 +44,7 @@ public class Text implements Drawable {
 		
 		// Render
 		int width = g.getFontMetrics().stringWidth(lbl);
-		g.drawString(lbl, x-width/2, y);
+		g.drawString(lbl, getX()-width/2, getY());
 		
 		// Reset
 		if (old_options != null) {

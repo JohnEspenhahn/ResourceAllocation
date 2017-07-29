@@ -2,7 +2,7 @@ package org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations;
 
 import java.util.function.Consumer;
 
-import org.espenhahn.allocate.likepaxos.registry.debug.mvc.Line;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Line;
 
 public class GrowLineAnimation extends TranslateAnimation<Line> {
 
@@ -11,8 +11,8 @@ public class GrowLineAnimation extends TranslateAnimation<Line> {
 	}
 	
 	@Override
-	protected void apply(int x, int y) {
-		getDrawable().setEnd(x, y);
+	protected void apply(int dx, int dy) {
+		getDrawable().translateDelta(dx, dy);
 	}
 
 }

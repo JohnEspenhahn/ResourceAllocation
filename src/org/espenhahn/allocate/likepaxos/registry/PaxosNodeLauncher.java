@@ -1,7 +1,6 @@
 package org.espenhahn.allocate.likepaxos.registry;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;

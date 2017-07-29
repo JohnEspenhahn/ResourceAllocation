@@ -1,4 +1,4 @@
-package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
+package org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects;
 
 import java.awt.Graphics2D;
 import java.awt.Stroke;

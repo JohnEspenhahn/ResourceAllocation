@@ -2,13 +2,13 @@ package org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations;
 
 import java.util.function.Consumer;
 
-import org.espenhahn.allocate.likepaxos.registry.debug.mvc.Drawable;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Drawable;
 
 public abstract class TranslateAnimation<T extends Drawable> implements Animation {
 
 	private T drawable;
 	
-	private double d;
+	private int steps;
 	private int x1, y1;
 	private int dx, dy;
 	private Consumer<T> callback;
@@ -16,11 +16,11 @@ public abstract class TranslateAnimation<T extends Drawable> implements Animatio
 	public TranslateAnimation(T drawable, int end_x, int end_y, Consumer<T> callback) {
 		this.drawable = drawable;
 		
-		this.d = 0;
+		this.steps = 0;
 		this.x1 = drawable.getX();
 		this.y1 = drawable.getY();
-		this.dx = (end_x - x1);
-		this.dy = (end_y - y1);
+		this.dx = (int) ((end_x - x1) * 0.1);
+		this.dy = (int) ((end_y - y1) * 0.1);
 		this.callback = callback;
 	}
 	
@@ -32,11 +32,9 @@ public abstract class TranslateAnimation<T extends Drawable> implements Animatio
 	
 	@Override
 	public boolean animate() {
-		this.d += 0.1;
-
-		apply((int) (x1 + dx*d), (int) (y1 + dy*d));
-		
-		if (this.d >= 1.0) {
+		this.steps += 1;
+		apply(dx, dy);
+		if (this.steps >= 10) {
 			if (callback != null) callback.accept(drawable);
 			
 			return true;

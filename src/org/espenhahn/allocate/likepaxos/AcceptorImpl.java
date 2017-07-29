@@ -4,6 +4,9 @@ import java.rmi.RemoteException;
 
 public abstract class AcceptorImpl<E> extends ProposerImpl<E> implements AcceptorLocal<E>, AcceptorRemote<E> {
 
+	/** For debugging purposes only */
+	protected double largestRejectedProposalNumber;
+	
 	protected double largestProposalNumber;
 	private Proposal<E> largestPreviousProposal;
 	
@@ -15,7 +18,12 @@ public abstract class AcceptorImpl<E> extends ProposerImpl<E> implements Accepto
 			largestProposalNumber = proposalNumber;
 			proposer.acceptProposal(this, proposalNumber, largestPreviousProposal);
 		} else {
-			System.out.println("[Acceptor] Ignoring proposal " + proposalNumber + " (needs " + largestProposalNumber + ")");
+			if (proposalNumber > largestRejectedProposalNumber) {
+				// Debugger only renders one incoming proposal number, so only output reject debug message for
+				// the last largest rejected proposal
+				largestRejectedProposalNumber = proposalNumber;
+				System.out.printf("reject:%f:%s\n", proposalNumber, "needs " + largestProposalNumber + "");
+			}
 			
 //			proposer.rejectProposal(proposalNumber, largestPreviousProposal);
 		}

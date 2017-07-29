@@ -1,5 +1,6 @@
 package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
 
+import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -24,8 +25,16 @@ import javax.swing.SwingUtilities;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.Animation;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.GrowLineAnimation;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.animations.TranslateTextAnimation;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Circle;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Drawable;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Line;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Text;
 
 public class DebugRenderer {
+	
+	private static final int CANVAS_WIDTH = 650,
+							CANVAS_HEIGHT = 550,
+							BUTTONS_HEIGHT = 30;
 
 	private Frame mainFrame;
 	public Button backButton, nextButton;
@@ -63,7 +72,7 @@ public class DebugRenderer {
 		ring.add(c);
 		for (int i = 0, ii = ring.size(); i < ii; i++) {
 			Circle c2 = ring.get(i);
-			c2.setPos(200, 50);
+			c2.setRelativePos(200, 50);
 			c2.rotateAbout(200, 125, (2*Math.PI) * (double)i/ii);
 		}
 		
@@ -76,10 +85,10 @@ public class DebugRenderer {
 	}
 	
 	public Drawable addLineBetween(Circle c1, Circle c2, Consumer<Line> callback) {
-		Line l = new Line(c1.getX(), c1.getY(), c1.getX(), c1.getY());
+		Line l = new Line(c1.getRelativeX(), c1.getRelativeY(), 0, 0);
 		objects.add(l);
 		
-		addAnimation(new GrowLineAnimation(l, c2.getX(), c2.getY(), callback));
+		addAnimation(new GrowLineAnimation(l, c2.getRelativeX(), c2.getRelativeY(), callback));
 		
 		return l;
 	}
@@ -99,7 +108,7 @@ public class DebugRenderer {
 
 	private void prepareGUI() {
 		mainFrame = new Frame("Paxois-like");
-		mainFrame.setSize(650, 750);
+		mainFrame.setSize(CANVAS_WIDTH, CANVAS_HEIGHT + BUTTONS_HEIGHT);
 		mainFrame.setLayout(new GridLayout(2, 1));
 		mainFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent windowEvent) {
@@ -107,7 +116,7 @@ public class DebugRenderer {
 			}
 		});
 		Panel actionPanel = new Panel();
-		actionPanel.setSize(650, 100);
+		actionPanel.setSize(CANVAS_WIDTH, BUTTONS_HEIGHT);
 		actionPanel.setLayout(new FlowLayout());
 		backButton = new Button("Back");
 		actionPanel.add(backButton);
@@ -116,18 +125,17 @@ public class DebugRenderer {
 		actionPanel.add(nextButton);
 
 		controlPanel = new Panel();
-		controlPanel.setSize(650, 650);
-		controlPanel.setLayout(new FlowLayout());
-
-		mainFrame.add(controlPanel);
-		mainFrame.add(actionPanel);
+		controlPanel.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+		controlPanel.setLayout(new BorderLayout());
+		
+		canvas = new AnimatedCanvas();
+		controlPanel.add(BorderLayout.CENTER, canvas);
+		
+		mainFrame.add(BorderLayout.CENTER, controlPanel);
+		mainFrame.add(BorderLayout.PAGE_END, actionPanel);
 	}
 
 	public void show() {
-		canvas = new AnimatedCanvas();
-		controlPanel.add(canvas);
-		
-		mainFrame.pack();
 		mainFrame.setVisible(true);
 		
 		// Thread to run animations
@@ -159,7 +167,7 @@ public class DebugRenderer {
 
 		public AnimatedCanvas() {
 			setBackground(Color.gray);
-			setSize(650, 650);
+			setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 		}
 
 		public void paint(Graphics g) {
