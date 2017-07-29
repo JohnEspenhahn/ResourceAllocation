@@ -95,6 +95,12 @@ GIPC also provides a "registry" which all of the processes connect to at startup
 
 To guarantee progress will be made in a distributed consensus algorithm, we need to avoid [livelock](https://en.wikipedia.org/wiki/Deadlock#Livelock). Paxos does this by "electing" a leader, and in fact Paxos itself can be used to elect a leader.
 
+##### Uses for instructors
+
+My implemention will include a UI to allow students to vistually step through the execution of any Paxos execution path. Different Paxos execution paths can be complex, and trying to understand them through console output can be difficult. I believe putting a UI on top of a full Paxos implemention will finally make Paxos comprehensible to any student that wishes to better understand it.
+
+[Video Demo](https://www.youtube.com/watch?v=pSbJMllad4w&feature=youtu.be&hd=1)
+
 ##### Simple Example (3 nodes, with 1 initially down)
 
 Using my debugging library (which allows me to force error cases), I have processes A reject the first round of proposals it receives. [Note: The proposal number is encoded as "{node local proposal number}.{node globally unique id}"]
