@@ -89,6 +89,8 @@ My implemention will include a UI to allow students to vistually step through th
 
 [Video Demo](https://www.youtube.com/watch?v=pSbJMllad4w&feature=youtu.be&hd=1)
 
+The UI is no where near done, but the video demo gives you an idea of what the final product would be like. In the demo I show three nodes connecting to each other. One node has accepted a propoal number, *1*. Then, one node proposes a proposal number *0.0001*. The node that has already accepted *1* rejects it, and the other two accept it.
+
 #### IPC Mechanism
 
 To simplify the problem, for my IPC mechanism I will be using GIPC. [GIPC](https://github.com/pdewan/GIPC) is an experimental remote procedure call library developed by Dr. Prasun Dewan at the University of North Carolina at Chapel Hill. It similar to Java's RMI, but it is non-blocking (meaning it does *not* block local execution until the remote procedures to completes).
