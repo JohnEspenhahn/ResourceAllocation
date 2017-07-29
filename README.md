@@ -83,6 +83,12 @@ So our code has been simplified from 7 virtual resources, to 3 real ones
 
 Paxos is a protocol for solving consensus problems in a network of unreliable processors. In Paxos there are three types of processes, Proposer/Acceptor/Learner. I have created interfaces for each of these, but in my implemention I treat each process as a "server" which is all three.
 
+### Uses for instructors
+
+My implemention will include a UI to allow students to vistually step through the execution of any Paxos execution path. Different Paxos execution paths can be complex, and trying to understand them through console output can be difficult. I believe putting a UI on top of a full Paxos implemention will finally make Paxos comprehensible to any student that wishes to better understand it.
+
+[Video Demo](https://www.youtube.com/watch?v=pSbJMllad4w&feature=youtu.be&hd=1)
+
 #### IPC Mechanism
 
 To simplify the problem, for my IPC mechanism I will be using GIPC. [GIPC](https://github.com/pdewan/GIPC) is an experimental remote procedure call library developed by Dr. Prasun Dewan at the University of North Carolina at Chapel Hill. It similar to Java's RMI, but it is non-blocking (meaning it does *not* block local execution until the remote procedures to completes).
@@ -94,12 +100,6 @@ GIPC also provides a "registry" which all of the processes connect to at startup
 #### Leader Election
 
 To guarantee progress will be made in a distributed consensus algorithm, we need to avoid [livelock](https://en.wikipedia.org/wiki/Deadlock#Livelock). Paxos does this by "electing" a leader, and in fact Paxos itself can be used to elect a leader.
-
-##### Uses for instructors
-
-My implemention will include a UI to allow students to vistually step through the execution of any Paxos execution path. Different Paxos execution paths can be complex, and trying to understand them through console output can be difficult. I believe putting a UI on top of a full Paxos implemention will finally make Paxos comprehensible to any student that wishes to better understand it.
-
-[Video Demo](https://www.youtube.com/watch?v=pSbJMllad4w&feature=youtu.be&hd=1)
 
 ##### Simple Example (3 nodes, with 1 initially down)
 
