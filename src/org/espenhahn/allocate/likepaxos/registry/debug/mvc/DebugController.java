@@ -1,40 +1,31 @@
 package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Circle;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Circle;
-
 public class DebugController {
-	Queue<String> commands;
+	private Queue<String> commands;
 
-	Map<String, PaxosNodeModel> nodes;
-	DebugRenderer renderer;
+    private Map<String, PaxosNodeModel> nodes;
+    private DebugRenderer renderer;
 
 	public DebugController(DebugRenderer renderer) {
-		this.commands = new LinkedList<String>();
-		this.nodes = new HashMap<String, PaxosNodeModel>();
+		this.commands = new LinkedList<>();
+		this.nodes = new HashMap<>();
 		this.renderer = renderer;
 
-		renderer.nextButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				processNext();
-			}
-
-		});
+		renderer.nextButton.addActionListener((event) -> processNext());
 	}
 
 	public void appendCommand(String src, String cmd) {
 		this.commands.add(src + ":" + cmd);
 	}
 
-	public boolean processNext() {
+	private boolean processNext() {
 		String[] cmds = null;
 		while (!commands.isEmpty()) {
 			String text_cmd = commands.remove();
@@ -54,16 +45,23 @@ public class DebugController {
 
 		String src = cmds[0];
 		String cmd = cmds[1];
-		if (cmd.equals("register"))
-			register(Short.parseShort(cmds[2]), src);
-		else if (cmd.equals("connect"))
-			connect(src, cmds[2]);
-		else if (cmd.equals("accept"))
-			accept(src, Double.parseDouble(cmds[2]));
-		else if (cmd.equals("propose"))
-			propose(src, Double.parseDouble(cmds[2]), cmds[3]);
-		else if (cmd.equals("reject"))
-			reject(src, Double.parseDouble(cmds[2]));
+		switch (cmd) {
+		    case "register":
+                register(Short.parseShort(cmds[2]), src);
+                break;
+            case "connect":
+                connect(src, cmds[2]);
+                break;
+            case "accept":
+                accept(src, Double.parseDouble(cmds[2]), cmds[3]);
+                break;
+            case "propose":
+                propose(src, Double.parseDouble(cmds[2]), cmds[3]);
+                break;
+            case "reject":
+                reject(src, Double.parseDouble(cmds[2]));
+                break;
+        }
 
 		return true;
 	}
@@ -95,12 +93,15 @@ public class DebugController {
 		});
 	}
 
-	private void accept(String src, double proposalNumber) {
+	private void accept(String src, double proposalNumber, String dest) {
 		PaxosNodeModel m1 = nodes.get(src);
 		renderer.invoke(() -> {
 			m1.setProposalNumber(null);
 			m1.setAcceptedProposalNumber(proposalNumber);
 		});
+
+		PaxosNodeModel m2 = nodes.get(dest);
+		if (m2 != null) renderer.addTextBetween("" + proposalNumber, m1.getCircle(), m2.getCircle(), (t) -> renderer.removeShape(t));
 	}
 	
 	private void reject(String src, double proposalNumber) {

@@ -1,35 +1,34 @@
 package org.espenhahn.allocate.likepaxos.registry;
 
-import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-
-import org.espenhahn.allocate.likepaxos.PaxosServerDebuggable;
-import org.espenhahn.allocate.likepaxos.PaxosServerDebuggableImpl;
-
 import inputport.rpc.DirectedRPCProxyGenerator;
 import inputport.rpc.duplex.AnAbstractDuplexRPCClientPortLauncher;
+import org.espenhahn.allocate.likepaxos.PaxosServerDebuggable;
+import org.espenhahn.allocate.likepaxos.PaxosServerDebuggableImpl;
 import port.PortAccessKind;
 import port.PortKind;
 import port.SessionChoice;
 import sessionport.rpc.duplex.DuplexRPCSessionPort;
 import util.trace.Tracer;
 
+import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
 public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 
-	protected short clientId;
-	protected PaxosServerDebuggableImpl localPaxosInstance;
+	private short clientId;
+    private PaxosServerDebuggableImpl localPaxosInstance;
 	
 	/** Map<Server,Port> */
-	protected Map<PaxosServerDebuggable,String> allPaxosNodes;
+    private Map<PaxosServerDebuggable,String> allPaxosNodes;
 
-	public PaxosNodeLauncher(String clientName, short clientId, String serverHost, String serverId, String serverName) {
+	private PaxosNodeLauncher(String clientName, short clientId, String serverHost, String serverId, String serverName) {
 		super(clientName, serverHost, serverId, serverName);
 		DirectedRPCProxyGenerator.setDoShortCircuitLocalCallsToRemotes(false);
 
 		this.clientId = clientId;
-		this.allPaxosNodes = new HashMap<PaxosServerDebuggable, String>();
+		this.allPaxosNodes = new HashMap<>();
 		
 		System.out.printf("register:%d\n", clientId);
 	}
@@ -60,7 +59,7 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 		return SessionChoice.P2P;
 	}
 
-	protected PaxosServerDebuggable connectDirectTo(String name) {
+	private PaxosServerDebuggable connectDirectTo(String name) {
 		PaxosServerDebuggable proxy = (PaxosServerDebuggable) DirectedRPCProxyGenerator
 				.generateRPCProxy((DuplexRPCSessionPort) mainPort, name, PaxosServerDebuggable.class, null);
 		
@@ -72,7 +71,7 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 		return proxy;
 	}
 
-	protected void start() {
+	private void start() {
 		try {
 			localPaxosInstance.setup(clientId, allPaxosNodes);
 		} catch (RemoteException e) {
@@ -87,19 +86,24 @@ public class PaxosNodeLauncher extends AnAbstractDuplexRPCClientPortLauncher {
 		Tracer.showWarnings(false);
 		Tracer.showInfo(false);
 
-		short port = Short.parseShort(args[0]);
+		short port;
+		try {
+			port = Short.parseShort(args[0]);
+		} catch (NumberFormatException | NullPointerException e) {
+			throw new RuntimeException("Invalid port number: " + args[0]);
+		}
 
 		String address = "localhost";
-		if (args.length > 2)
-			address = args[2];
+		if (args.length > 1)
+			address = args[1];
 
-		PaxosNodeLauncher launcher = (new PaxosNodeLauncher("" + port, port, address, PaxosSessionServerLauncher.SERVER_ID,
-				PaxosSessionServerLauncher.SERVER_NAME));
-
+		PaxosNodeLauncher launcher = new PaxosNodeLauncher(
+				"" + port, port, address, PaxosSessionServerLauncher.SERVER_ID,
+				PaxosSessionServerLauncher.SERVER_NAME
+		);
 		launcher.launch();
 
 		Scanner s = new Scanner(System.in);
-
 		while (s.hasNext()) {
 			String str = s.nextLine().trim();
 			if (str.equalsIgnoreCase("start")) {

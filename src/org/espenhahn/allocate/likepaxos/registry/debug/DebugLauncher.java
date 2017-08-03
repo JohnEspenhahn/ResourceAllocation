@@ -1,31 +1,37 @@
 package org.espenhahn.allocate.likepaxos.registry.debug;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.Scanner;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.espenhahn.allocate.likepaxos.registry.PaxosNodeLauncher;
 import org.espenhahn.allocate.likepaxos.registry.PaxosSessionServerLauncher;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.DebugController;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.DebugRenderer;
 
+import java.io.*;
+import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class DebugLauncher {
 	
-	static final int RUNTIME = 17;
-	static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+	private static final int RUNTIME = 17;
+	private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 	private static DebugController controller;
 	
 	public static void main(String[] args) throws IOException, InterruptedException {
 		DebugRenderer renderer = new DebugRenderer();
 		DebugLauncher.controller = new DebugController(renderer);
-		
+
+		// Start launcher and outputting from it
 		Process launcher = exec(PaxosSessionServerLauncher.class);
+		final InputStream inStream = launcher.getInputStream();
+		new Thread(() -> {
+			Scanner scan = new Scanner(new InputStreamReader(inStream));
+			while (scan.hasNextLine()) {
+				String stdin_line = scan.nextLine();
+				System.out.println("[LAUNCHER] " + stdin_line);
+			}
+			scan.close();
+		}).start();
 
 		Thread.sleep(700);
 		
@@ -33,7 +39,7 @@ public class DebugLauncher {
 					b = execWriter(PaxosNodeLauncher.class, "9002", "localhost"),
 					c = execWriter(PaxosNodeLauncher.class, "9003", "localhost");
 
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 		
 		a.println("9001");
 		a.println("9002");
@@ -54,7 +60,7 @@ public class DebugLauncher {
 		c.flush();
 		
 		// No longer need launcher (all directly connected)
-		Thread.sleep(2000);
+		Thread.sleep(3000);
 		launcher.destroyForcibly();
 		
 		a.println("start");
@@ -75,11 +81,11 @@ public class DebugLauncher {
 		renderer.show();
 	}
 	
-	public static PrintWriter execWriter(Class clazz, String... args) throws IOException, InterruptedException {
+	private static PrintWriter execWriter(Class clazz, String... args) throws IOException, InterruptedException {
 		return new PrintWriter(exec(clazz, args).getOutputStream());
 	}
 
-	public static Process exec(Class clazz, String... args) throws IOException, InterruptedException {
+    private static Process exec(Class clazz, String... args) throws IOException, InterruptedException {
 		String javaHome = System.getProperty("java.home");
 		String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
 		String classPath = System.getProperty("java.class.path");

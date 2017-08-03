@@ -3,33 +3,37 @@ package org.espenhahn.allocate.likepaxos.registry.debug.mvc;
 import org.espenhahn.allocate.likepaxos.registry.debug.mvc.objects.Circle;
 
 public class PaxosNodeModel {
-	private static final int LBL_PROPOSAL_NUMBER = 0,
-							 LBL_ACCEPTED_PROPOSAL_NUMBER = 1;
+	private static final int LBL_ID = 0,
+							 LBL_PROPOSAL_NUMBER = 1,
+							 LBL_ACCEPTED_PROPOSAL_NUMBER = 2;
 	
-	public String name;
-	public short id;
+	private String name;
+    private short id;
 	
 	private Circle circle;
 
-	public PaxosNodeModel(String name, short id) {
+    protected PaxosNodeModel(String name, short id) {
 		this.name = name;
 		this.id = id;
 	}
 	
-	public void setProposalNumber(Double pn) {
+	protected void setProposalNumber(Double pn) {
 		this.circle.addLabel(LBL_PROPOSAL_NUMBER, (pn != null ? "" + pn : ""));
 	}
-	
-	public void setAcceptedProposalNumber(Double pn) {
+
+    protected void setAcceptedProposalNumber(Double pn) {
 		this.circle.addLabel(LBL_ACCEPTED_PROPOSAL_NUMBER, (pn != null ? "" + pn : ""));
 	}
-	
-	public Circle getCircle() {
+
+    protected Circle getCircle() {
 		return this.circle;
 	}
-	
-	public void setCircle(Circle circle) {
+
+    protected void setCircle(Circle circle) {
 		this.circle = circle;
+
+		if (circle != null)
+			this.circle.addLabel(LBL_ID, "" + id);
 	}
 	
 }

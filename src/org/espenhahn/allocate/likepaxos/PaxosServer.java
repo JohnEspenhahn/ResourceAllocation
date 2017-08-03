@@ -1,5 +1,8 @@
 package org.espenhahn.allocate.likepaxos;
 
+import inputport.rpc.AnRPCProxyInvocationHandler;
+
+import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.Map;
@@ -16,14 +19,18 @@ public class PaxosServer extends LearnerImpl<Short> {
 	
 	/**
 	 * Every server needs to be assigned a globally unique, final id at creation time
-	 * @param id
-	 * @param servers
+	 * @param id Globally unique, final id
+	 * @param servers All the associated proxies
 	 */
 	public void setup(short id, Map<PaxosServerDebuggable,String> servers) throws RemoteException {
 		this.myID = id;
 		this.servers = servers;
 		this.countForMajority = servers.size()/2 + 1;
 	}
+
+	protected short getId() {
+	    return myID;
+    }
 	
 	@Override
 	public int getCountForMajority() {
@@ -44,12 +51,12 @@ public class PaxosServer extends LearnerImpl<Short> {
 	
 	@Override
 	public String getAcceptorName(AcceptorRemote<Short> acceptor) {
-		return servers.get(acceptor);
+		return ((AnRPCProxyInvocationHandler) Proxy.getInvocationHandler(acceptor)).getProxyDestination();
 	}
 	
 	@Override
 	public String getProposerName(ProposerRemote<Short> proposer) {
-		return servers.get(proposer);
+		return ((AnRPCProxyInvocationHandler) Proxy.getInvocationHandler(proposer)).getProxyDestination();
 	}
 	
 	@Override
@@ -73,7 +80,7 @@ public class PaxosServer extends LearnerImpl<Short> {
 	@Override
 	public Proposal<Short> getProposal(double proposalNumber, Short value) {
 		if (value == null) value = myID;  // If no value given, can be any (aka the value I want)
-		return new ProposalImpl<Short>(proposalNumber, value);
+		return new ProposalImpl<>(proposalNumber, value);
 	}
 	
 	

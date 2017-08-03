@@ -7,16 +7,16 @@ public class PaxosServerDebuggableImpl extends PaxosServer implements PaxosServe
 
 	// TODO make blocking, but doesn't work when [Client 1 Proxy -> Server Proxy -> Client 2 Local Impl]
 	public void acceptorSetLargestProposalNumber(double proposalNumber) {
-		System.out.printf("accept:%f:forcing proposal number\n", proposalNumber);
+		System.out.printf("accept:%f:%d\n", proposalNumber, this.getId());
 		
 		this.largestProposalNumber = proposalNumber;
 	}
 
 	@Override
 	public void setup(short id, Map<PaxosServerDebuggable,String> servers) throws RemoteException {
-		super.setup(id, servers);
+		System.out.printf("setup:%d\n", id);
 
-		System.out.println("Setup as " + id);
+		super.setup(id, servers);
 
 //		this.sendPromiseRequest();
 	}
